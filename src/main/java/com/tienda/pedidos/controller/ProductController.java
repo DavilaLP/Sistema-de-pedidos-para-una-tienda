@@ -43,8 +43,11 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<java.util.Map<String, Object>> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("message", "Producto eliminado con éxito");
+        response.put("productId", id);
+        return ResponseEntity.ok(response);
     }
 }

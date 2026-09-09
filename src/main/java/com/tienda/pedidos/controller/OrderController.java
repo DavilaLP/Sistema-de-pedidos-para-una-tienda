@@ -43,8 +43,12 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelOrder(@PathVariable Long id) {
+    public ResponseEntity<java.util.Map<String, Object>> cancelOrder(@PathVariable Long id) {
         orderService.cancelOrder(id);
-        return ResponseEntity.noContent().build();
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("message", "Pedido cancelado con éxito y stock repuesto al inventario");
+        response.put("orderId", id);
+        response.put("status", "CANCELADO");
+        return ResponseEntity.ok(response);
     }
 }
