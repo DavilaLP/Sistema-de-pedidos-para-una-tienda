@@ -106,6 +106,11 @@ El modelo de clases es el siguiente:
 
 ## 🌐 4. Matriz de Endpoints
 
+### 🏠 Punto de Entrada / Bienvenida (`/`)
+| Método | URI | Entrada | Respuesta Esperada (JSON) | Código HTTP |
+| :--- | :--- | :--- | :--- | :---: |
+| **GET** | `/` | Ninguna | Estado del sistema, versión APF1 y enlaces a las APIs | `200 OK` |
+
 ### 🍎 Módulo de Productos (`/api/products`)
 
 | Método | URI | Entrada (JSON / Params) | Respuesta Esperada (JSON) | Código HTTP |
@@ -113,8 +118,8 @@ El modelo de clases es el siguiente:
 | **GET** | `/api/products` | Ninguna | Listado de productos disponibles | `200 OK` |
 | **GET** | `/api/products/{id}` | Path Variable: `id` | Detalle del producto solicitado | `200 OK` |
 | **POST** | `/api/products` | Cuerpo: `{"name", "price", "stock"}` | Producto creado con su ID generado | `201 Created` |
-| **PUT** | `/api/products/{id}` | Cuerpo: `{"name", "price", "stock"}` | Producto modificado | `200 OK` |
-| **DELETE** | `/api/products/{id}` | Path Variable: `id` | Ninguno | `204 No Content` |
+| **PUT** | `/api/products/{id}` | Cuerpo: `{"name", "price", "stock"}` | Producto modificado con nuevos valores | `200 OK` |
+| **DELETE** | `/api/products/{id}` | Path Variable: `id` | Confirmación en JSON de producto eliminado | `200 OK` |
 
 ### 📦 Módulo de Pedidos (`/api/orders`)
 
@@ -124,7 +129,7 @@ El modelo de clases es el siguiente:
 | **GET** | `/api/orders/{id}` | Path Variable: `id` | Detalle del pedido solicitado | `200 OK` |
 | **POST** | `/api/orders` | Cuerpo: `{"clientName", "items": [{"productId", "quantity"}]}` | Pedido creado con total calculado y stock restado | `201 Created` |
 | **PUT** | `/api/orders/{id}/status` | Request Param: `?status=PAGADO` | Pedido con estado modificado | `200 OK` |
-| **POST** | `/api/orders/{id}/cancel` | Path Variable: `id` | Ninguno (retorna stock al catálogo) | `204 No Content` |
+| **POST** | `/api/orders/{id}/cancel` | Path Variable: `id` | Confirmación en JSON de pedido cancelado y reposición de existencias | `200 OK` |
 
 ---
 
@@ -190,9 +195,24 @@ mvn test
 ```
 
 ### Ejecutar el Proyecto
-Para arrancar el servidor embebido Tomcat en el puerto `8080`:
+* **Opción A (Desde NetBeans):** Abrir el proyecto, hacer clic derecho sobre `SistemaPedidosApplication.java` $\rightarrow$ **Run File** (o presionar `Shift + F6`).
+* **Opción B (Desde PowerShell / Terminal):**
 ```powershell
 mvn spring-boot:run
 ```
+El servidor embebido Tomcat iniciará en el puerto `8080`.
 
-Una vez levantado el servidor, puedes importar la colección de Postman [`postman_collection.json`](file:///c:/Users/Usuario/Documents/Sistema%20de%20pedidos%20para%20una%20tienda/postman_collection.json) que se encuentra en la raíz del proyecto para ejecutar pruebas manuales adicionales sobre los endpoints CRUD.
+---
+
+## 📬 9. Pruebas Automatizadas en Postman (Collection Runner)
+
+El proyecto incluye la colección [`postman_collection.json`](file:///c:/Users/Usuario/Documents/Sistema%20de%20pedidos%20para%20una%20tienda/postman_collection.json) con **24 scripts de validación automática (`pm.test`)**:
+
+### Pasos para ejecutar la suite automatizada:
+1. Importar `postman_collection.json` en Postman.
+2. Hacer clic sobre la colección **`Sistema de Pedidos - APF1`** $\rightarrow$ seleccionar **Run**.
+3. Hacer clic en **Run Sistema de Pedidos - APF1**.
+4. **Resultado:** Se ejecutarán las 12 peticiones de forma secuencial en menos de 2 segundos, aprobando al 100% las 24 aserciones:
+   * ✅ Códigos HTTP verificados: `200 OK`, `201 Created`, `400 Bad Request` y `404 Not Found`.
+   * ✅ Integridad de datos: Cálculo exacto de importes, descuento en tiempo real y retorno de existencias.
+   * ✅ **Métrica de éxito:** `Passed: 24 | Failed: 0 | Errors: 0 (100% Pass)`.
