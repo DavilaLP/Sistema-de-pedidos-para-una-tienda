@@ -188,11 +188,13 @@ Establecer la variable `JAVA_HOME` para utilizar el JDK 17 (en PowerShell):
 $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot"
 ```
 
-### Ejecutar las Pruebas (TDD)
-Para compilar y correr las 4 pruebas automatizadas integradas:
+### Ejecutar las Pruebas Unitarias (TDD con JUnit 5)
+* **Opción A (Desde NetBeans):** Clic derecho sobre el proyecto $\rightarrow$ seleccionar **Test** (o presionar `Alt + F6`). NetBeans abrirá la ventana gráfica mostrando la barra 100% verde con las 4 pruebas aprobadas.
+* **Opción B (Desde PowerShell / Terminal):**
 ```powershell
 mvn test
 ```
+Verás en consola el reporte oficial de JUnit con `Tests run: 4, Failures: 0, Errors: 0` $\rightarrow$ `BUILD SUCCESS`.
 
 ### Ejecutar el Proyecto
 * **Opción A (Desde NetBeans):** Abrir el proyecto, hacer clic derecho sobre `SistemaPedidosApplication.java` $\rightarrow$ **Run File** (o presionar `Shift + F6`).
