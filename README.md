@@ -145,15 +145,15 @@ El backend utiliza una arquitectura por capas desacopladas mediante inyección d
 
 ---
 
-## 🧪 6. Pruebas Automatizadas y Enfoque TDD
+## 🧪 6. Pruebas Automatizadas con JUnit 5 y Enfoque TDD
 
-Se han implementado **4 pruebas automatizadas** que cubren las reglas de negocio clave e integraciones:
+El proyecto utiliza **JUnit 5**, **Mockito** y **Spring Boot MockMvc** para garantizar la calidad del código. Se han implementado **4 pruebas automatizadas** que cubren las reglas de negocio clave e integraciones:
 
-### Capa de Servicio (`OrderServiceTest.java`)
+### Capa de Servicio (`OrderServiceTest.java` con JUnit 5 y Mockito)
 1.  `testCreateOrder_Success`: Valida que al crear un pedido con stock suficiente, se calcule el total correcto de manera automática, el estado inicial sea `PENDIENTE` y el stock del producto disminuya correctamente en el repositorio.
 2.  `testCreateOrder_InsufficientStock`: Valida que si se solicita una cantidad superior al stock del producto, el servicio lance una excepción `InsufficientStockException` y no guarde nada en el repositorio.
 
-### Capa de Controlador (`OrderControllerTest.java`)
+### Capa de Controlador (`OrderControllerTest.java` con MockMvc)
 3.  `testCreateOrder_Success_Returns201`: Simula un cliente REST que envía un JSON correcto para crear un pedido, esperando una respuesta HTTP `201 Created` con el cuerpo de la orden creada.
 4.  `testCreateOrder_InsufficientStock_Returns400`: Simula la petición REST con datos válidos pero que superan el stock de almacenamiento, validando que el manejador global de excepciones devuelva `400 Bad Request` y una estructura de error JSON coherente.
 
