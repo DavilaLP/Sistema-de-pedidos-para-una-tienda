@@ -1,0 +1,26 @@
+@startuml
+
+class Order {
+    - id: Long
+    - clientName
+    - total
+    - status
+}
+
+class OrderItem {
+    - productId
+    - quantity
+    - unitPrice
+}
+
+class Product {
+    - id: Long
+    - name
+    - price
+    - stock
+}
+
+Order "1" -- "1..*" OrderItem
+OrderItem "*" -- "1" Product
+
+@enduml
