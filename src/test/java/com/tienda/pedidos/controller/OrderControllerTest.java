@@ -32,6 +32,12 @@ class OrderControllerTest {
     @MockBean
     private OrderService orderService;
 
+    @MockBean
+    private com.tienda.pedidos.security.JwtService jwtService;
+
+    @MockBean
+    private org.springframework.security.core.userdetails.UserDetailsService userDetailsService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
