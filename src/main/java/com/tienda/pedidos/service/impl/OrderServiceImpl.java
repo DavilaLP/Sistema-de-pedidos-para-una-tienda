@@ -42,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("El pedido debe contener al menos un producto.");
         }
 
+        order.setId(null); // nunca aceptar un id enviado por el cliente
         order.setOrderDate(LocalDateTime.now());
         order.setStatus("PENDIENTE");
 
@@ -61,7 +62,9 @@ public class OrderServiceImpl implements OrderService {
             product.setStock(product.getStock() - item.getQuantity());
             productRepository.save(product);
 
-            // Completar detalles del ítem
+            // Completar detalles del ítem y vincularlo a su pedido
+            item.setId(null);
+            item.setOrder(order);
             item.setProductName(product.getName());
             item.setUnitPrice(product.getPrice());
 
