@@ -21,7 +21,10 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
+    public ResponseEntity<List<Order>> getAllOrders(@RequestParam(required = false) String status) {
+        if (status != null) {
+            return ResponseEntity.ok(orderService.getOrdersByStatus(status));
+        }
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
