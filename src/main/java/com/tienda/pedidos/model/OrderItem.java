@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,12 +37,15 @@ public class OrderItem {
     @EqualsAndHashCode.Exclude
     private Order order;
 
+    @NotNull(message = "El ID del producto es obligatorio")
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
     @Column(name = "product_name", length = 150)
     private String productName;
 
+    @NotNull(message = "La cantidad es obligatoria")
+    @Positive(message = "La cantidad debe ser mayor que cero")
     @Column(nullable = false)
     private Integer quantity;
 

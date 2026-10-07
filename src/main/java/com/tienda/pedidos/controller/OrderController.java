@@ -4,6 +4,7 @@ import com.tienda.pedidos.model.Order;
 import com.tienda.pedidos.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
+    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
         Order created = orderService.createOrder(order);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
