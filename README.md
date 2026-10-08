@@ -1,6 +1,6 @@
 # 📦 Sistema de Gestión de Inventario y Pedidos para una Tienda
 
-Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3** y **Java 17**, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF1 (Semana 5)** de Desarrollo Web Integrado (UTP).
+Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3** y **Java 17**, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF2 (Semana 10)** de Desarrollo Web Integrado (UTP).
 
 ### 👥 Integrantes del Equipo
 * **Davila Guerra, Duvan Isai** — Participación: **100%**
@@ -59,16 +59,17 @@ El proyecto está acotado a **2 recursos principales** y **1 recurso de relació
 2.  **Pedido (`Order`):** Atributos `id`, `clientName`, `orderDate`, `items`, `total`, `status`.
 3.  **Detalle del Pedido (`OrderItem`):** Atributos `productId`, `productName`, `quantity`, `unitPrice`.
 
-### ✅ Funcionalidades Incluidas (APF1)
-*   **Gestión de Productos (CRUD completo en memoria):** Crear, listar, consultar por ID, actualizar y eliminar productos.
+### ✅ Funcionalidades Incluidas (APF1 y APF2)
+*   **Gestión de Productos (CRUD):** Crear, listar, consultar por ID, actualizar y eliminar productos.
 *   **Gestión de Pedidos:** Registro de pedidos con cálculo automático de totales y asociación de ítems.
 *   **Control de Inventario:** Validación de stock disponible al momento de crear un pedido y descuento automático de existencias.
 *   **Gestión de Estados y Cancelación:** Modificación de estado del pedido (`PENDIENTE`, `PAGADO`, `CANCELADO`) y devolución automática de stock al cancelar.
 *   **Manejo Global de Excepciones:** Respuestas HTTP normalizadas (`400 Bad Request`, `404 Not Found`) con DTO de error.
+*   **Persistencia (APF2):** Base de datos relacional MySQL (en producción) y H2 (para pruebas) integradas mediante Spring Data JPA e Hibernate.
+*   **Seguridad y Roles (APF2):** Autenticación sin estado usando JSON Web Tokens (JWT). Roles diferenciados (`ADMIN` para catálogo/gestión total, y `CLIENTE` para crear órdenes).
+*   **Validaciones (APF2):** Filtros de validación de entradas HTTP con Jakarta Validation (`@Valid`, `@NotBlank`, `@Min`, `@Positive`) en todos los DTOs.
 
 ### 🚫 Funcionalidades Excluidas (Planificadas para avances posteriores)
-*   Persistencia en base de datos relacional y mapeo objeto-relacional con JPA / Hibernate (programado para **APF2 - Semana 10**).
-*   Seguridad, autenticación con JWT y control de acceso basado en roles (programado para **APF2 - Semana 10**).
 *   Interfaz gráfica de usuario y componentes frontend desarrollados en Angular (programado para **APF3 - Semana 15**).
 *   Despliegue e infraestructura en la nube / Cloud (programado para **Entrega Final - Semana 18**).
 
@@ -109,7 +110,12 @@ El modelo de clases es el siguiente:
 ### 🏠 Punto de Entrada / Bienvenida (`/`)
 | Método | URI | Entrada | Respuesta Esperada (JSON) | Código HTTP |
 | :--- | :--- | :--- | :--- | :---: |
-| **GET** | `/` | Ninguna | Estado del sistema, versión APF1 y enlaces a las APIs | `200 OK` |
+| **GET** | `/` | Ninguna | Estado del sistema, versión APF2 y enlaces a las APIs | `200 OK` |
+
+### 🔒 Autenticación (`/auth`)
+| Método | URI | Entrada (JSON) | Respuesta Esperada (JSON) | Código HTTP |
+| :--- | :--- | :--- | :--- | :---: |
+| **POST** | `/auth/login` | `{"username", "password"}` | Token JWT para acceder a recursos protegidos | `200 OK` |
 
 ### 🍎 Módulo de Productos (`/api/products`)
 
@@ -137,17 +143,18 @@ El modelo de clases es el siguiente:
 
 El backend utiliza una arquitectura por capas desacopladas mediante inyección de dependencias por constructor:
 
-*   **`model`**: Contiene las entidades POJO de negocio (`Product`, `Order`, `OrderItem`).
-*   **`repository`**: Interfaces y su correspondiente implementación en memoria utilizando `ConcurrentHashMap` para simular una base de datos segura contra concurrencia.
-*   **`service`**: Capa lógica de negocio (validación de stock, cálculo de totales, retorno de stock).
+*   **`model`**: Contiene las entidades POJO de negocio mapeadas a MySQL mediante anotaciones JPA (`@Entity`, `@Table`).
+*   **`repository`**: Interfaces de Spring Data JPA (`JpaRepository`) que resuelven operaciones SQL de forma automática y optimizada.
+*   **`service`**: Capa lógica de negocio (validación de stock, cálculo de totales, retorno de stock) protegida mediante anotaciones de transaccionalidad (`@Transactional`).
 *   **`controller`**: Exposición de los endpoints REST en formato JSON.
-*   **`exception`**: Captura global de excepciones (`ResourceNotFoundException`, `InsufficientStockException`) mapeadas a respuestas REST estructuradas mediante `@RestControllerAdvice`.
+*   **`security`**: Filtros JWT sin estado (`JwtAuthFilter`), servicio de tokens y encriptación de contraseñas con BCrypt.
+*   **`exception`**: Captura global de excepciones (`ResourceNotFoundException`, `InsufficientStockException`, `MethodArgumentNotValidException`) mapeadas a respuestas REST estructuradas mediante `@RestControllerAdvice`.
 
 ---
 
 ## 🧪 6. Pruebas Automatizadas con JUnit 5 y Enfoque TDD
 
-El proyecto utiliza **JUnit 5**, **Mockito** y **Spring Boot MockMvc** para garantizar la calidad del código. Se han implementado **4 pruebas automatizadas** que cubren las reglas de negocio clave e integraciones:
+El proyecto utiliza **JUnit 5**, **Mockito** y **Spring Boot MockMvc** para garantizar la calidad del código. Se han implementado **pruebas automatizadas** que cubren las reglas de negocio clave, integraciones JPA, seguridad y validaciones:
 
 ### Capa de Servicio (`OrderServiceTest.java` con JUnit 5 y Mockito)
 1.  `testCreateOrder_Success`: Valida que al crear un pedido con stock suficiente, se calcule el total correcto de manera automática, el estado inicial sea `PENDIENTE` y el stock del producto disminuya correctamente en el repositorio.
@@ -189,12 +196,12 @@ $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot"
 ```
 
 ### Ejecutar las Pruebas Unitarias (TDD con JUnit 5)
-* **Opción A (Desde NetBeans):** Clic derecho sobre el proyecto $\rightarrow$ seleccionar **Test** (o presionar `Alt + F6`). NetBeans abrirá la ventana gráfica mostrando la barra 100% verde con las 4 pruebas aprobadas.
+* **Opción A (Desde NetBeans):** Clic derecho sobre el proyecto $\rightarrow$ seleccionar **Test** (o presionar `Alt + F6`). NetBeans abrirá la ventana gráfica mostrando la barra 100% verde con las pruebas aprobadas.
 * **Opción B (Desde PowerShell / Terminal):**
 ```powershell
 mvn test
 ```
-Verás en consola el reporte oficial de JUnit con `Tests run: 4, Failures: 0, Errors: 0` $\rightarrow$ `BUILD SUCCESS`.
+Verás en consola el reporte oficial de JUnit con el total de pruebas exitosas $\rightarrow$ `BUILD SUCCESS`.
 
 ### Ejecutar el Proyecto
 * **Opción A (Desde NetBeans):** Abrir el proyecto, hacer clic derecho sobre `SistemaPedidosApplication.java` $\rightarrow$ **Run File** (o presionar `Shift + F6`).
@@ -208,13 +215,10 @@ El servidor embebido Tomcat iniciará en el puerto `8080`.
 
 ## 📬 9. Pruebas Automatizadas en Postman (Collection Runner)
 
-El proyecto incluye la colección [`postman_collection.json`](file:///c:/Users/Usuario/Documents/Sistema%20de%20pedidos%20para%20una%20tienda/postman_collection.json) con **24 scripts de validación automática (`pm.test`)**:
+El proyecto incluye la colección [`postman_collection.json`](file:///c:/Users/Usuario/Documents/Sistema%20de%20pedidos%20para%20una%20tienda/postman_collection.json) preconfigurada con variables de colección, validación de JWT y aserciones.
 
 ### Pasos para ejecutar la suite automatizada:
 1. Importar `postman_collection.json` en Postman.
-2. Hacer clic sobre la colección **`Sistema de Pedidos - APF1`** $\rightarrow$ seleccionar **Run**.
-3. Hacer clic en **Run Sistema de Pedidos - APF1**.
-4. **Resultado:** Se ejecutarán las 12 peticiones de forma secuencial en menos de 2 segundos, aprobando al 100% las 24 aserciones:
-   * ✅ Códigos HTTP verificados: `200 OK`, `201 Created`, `400 Bad Request` y `404 Not Found`.
-   * ✅ Integridad de datos: Cálculo exacto de importes, descuento en tiempo real y retorno de existencias.
-   * ✅ **Métrica de éxito:** `Passed: 24 | Failed: 0 | Errors: 0 (100% Pass)`.
+2. Hacer clic sobre la colección **`Sistema de Pedidos - APF2`** $\rightarrow$ seleccionar **Run**.
+3. Hacer clic en **Run Sistema de Pedidos - APF2**.
+4. **Resultado:** Se ejecutará primero el script de autenticación (Login), almacenará automáticamente el token JWT y ejecutará las demás peticiones usando el token portador, validando que los datos persistidos y las respuestas coincidan correctamente.
