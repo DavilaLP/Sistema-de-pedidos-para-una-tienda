@@ -52,14 +52,23 @@ public class DataInitializer {
 
     private void createIfMissing(UserRepository repo, PasswordEncoder encoder,
                                  String username, String rawPassword, Role role) {
-        if (repo.findByUsername(username).isPresent()) {
-            return;
-        }
         if (rawPassword == null || rawPassword.isBlank()) {
-            log.warn("Usuario '{}' NO creado: falta definir su contraseña en variable de entorno", username);
+            log.warn("Usuario '{}' NO procesado: falta definir su contraseña", username);
             return;
         }
-        repo.save(User.builder().username(username).password(encoder.encode(rawPassword)).role(role).build());
-        log.info("Usuario '{}' creado con rol {}", username, role);
+        
+        repo.findByUsername(username).ifPresentOrElse(
+            user -> {
+                // Si existe, actualizamos la contraseña para asegurarnos de que coincida con el properties actual
+                user.setPassword(encoder.encode(rawPassword));
+                repo.save(user);
+                log.info("Contraseña del usuario '{}' actualizada a la configuración actual", username);
+            },
+            () -> {
+                // Si no existe, lo creamos
+                repo.save(User.builder().username(username).password(encoder.encode(rawPassword)).role(role).build());
+                log.info("Usuario '{}' creado con rol {}", username, role);
+            }
+        );
     }
 }
