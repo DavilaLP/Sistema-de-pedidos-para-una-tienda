@@ -18,13 +18,16 @@ import java.util.Set;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private static final Set<String> VALID_STATUSES = Set.of("PENDIENTE", "PAGADO", "CANCELADO");
+    private static final Set<String> VALID_STATUSES =
+            Set.of("PENDIENTE", "PAGADO", "CANCELADO");
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
-    // Inyección por constructor explícita
-    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderServiceImpl(
+            OrderRepository orderRepository,
+            ProductRepository productRepository
+    ) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
     }
@@ -38,57 +41,77 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public List<Order> getOrdersByStatus(String status) {
-        return orderRepository.findByStatusWithItems(normalizeStatus(status));
+        return orderRepository.findByStatusWithItems(
+                normalizeStatus(status)
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
     public Order getOrderById(Long id) {
         return orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Pedido no encontrado con ID: " + id
+                ));
     }
 
     private String normalizeStatus(String status) {
-        String normalized = status == null ? "" : status.trim().toUpperCase();
+        String normalized = status == null
+                ? ""
+                : status.trim().toUpperCase(java.util.Locale.ROOT);
+
         if (!VALID_STATUSES.contains(normalized)) {
-            throw new IllegalArgumentException("Estado inválido. Valores permitidos: PENDIENTE, PAGADO, CANCELADO");
+            throw new IllegalArgumentException(
+                    "Estado inválido. Valores permitidos: "
+                            + "PENDIENTE, PAGADO, CANCELADO"
+            );
         }
+
         return normalized;
     }
 
     /**
-     * Transacción atómica: descuenta stock de varios productos y guarda el pedido.
-     * Si falla cualquier ítem (stock insuficiente, producto inexistente), se hace
-     * ROLLBACK de todo y no queda stock descontado a medias.
+     * Descuenta el stock y guarda el pedido en una sola transacción.
+     * Si falla algún ítem, se revierten todos los cambios.
      */
     @Override
     @Transactional
     public Order createOrder(Order order) {
         if (order.getItems() == null || order.getItems().isEmpty()) {
-            throw new IllegalArgumentException("El pedido debe contener al menos un producto.");
+            throw new IllegalArgumentException(
+                    "El pedido debe contener al menos un producto."
+            );
         }
 
-        order.setId(null); // nunca aceptar un id enviado por el cliente
+        order.setId(null);
         order.setOrderDate(LocalDateTime.now());
         order.setStatus("PENDIENTE");
 
         double total = 0.0;
 
-        // Validar stock y calcular total
         for (OrderItem item : order.getItems()) {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + item.getProductId()));
+            Product product = productRepository
+                    .findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Producto no encontrado con ID: "
+                                    + item.getProductId()
+                    ));
 
             if (product.getStock() < item.getQuantity()) {
-                throw new InsufficientStockException("Stock insuficiente para el producto: " + product.getName()
-                        + " (Disponible: " + product.getStock() + ", Solicitado: " + item.getQuantity() + ")");
+                throw new InsufficientStockException(
+                        "Stock insuficiente para el producto: "
+                                + product.getName()
+                                + " (Disponible: " + product.getStock()
+                                + ", Solicitado: " + item.getQuantity()
+                                + ")"
+                );
             }
 
-            // Descontar stock
-            product.setStock(product.getStock() - item.getQuantity());
+            product.setStock(
+                    product.getStock() - item.getQuantity()
+            );
             productRepository.save(product);
 
-            // Completar detalles del ítem y vincularlo a su pedido
             item.setId(null);
             item.setOrder(order);
             item.setProductName(product.getName());
@@ -101,30 +124,53 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
+    /**
+     * Cambia el estado del pedido.
+     * Si se solicita CANCELADO, devuelve también el stock.
+     * Los pedidos cancelados no pueden reactivarse.
+     */
     @Override
     @Transactional
     public Order updateOrderStatus(Long id, String status) {
+        String normalizedStatus = normalizeStatus(status);
         Order order = getOrderById(id);
-        order.setStatus(normalizeStatus(status));
+
+        if ("CANCELADO".equals(normalizedStatus)) {
+            cancelOrder(id);
+            return getOrderById(id);
+        }
+
+        if ("CANCELADO".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalArgumentException(
+                    "No se puede cambiar el estado de un pedido cancelado."
+            );
+        }
+
+        order.setStatus(normalizedStatus);
         return orderRepository.save(order);
     }
 
-    /** Transacción: repone el stock de todos los ítems y marca el pedido CANCELADO como una sola unidad. */
+    /**
+     * Devuelve el stock y marca el pedido como CANCELADO.
+     * Si ya estaba cancelado, no vuelve a devolver el stock.
+     */
     @Override
     @Transactional
     public void cancelOrder(Long id) {
         Order order = getOrderById(id);
 
         if ("CANCELADO".equalsIgnoreCase(order.getStatus())) {
-            return; // Ya cancelado
+            return;
         }
 
-        // Devolver el stock
         for (OrderItem item : order.getItems()) {
-            productRepository.findById(item.getProductId()).ifPresent(product -> {
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
-            });
+            productRepository.findById(item.getProductId())
+                    .ifPresent(product -> {
+                        product.setStock(
+                                product.getStock() + item.getQuantity()
+                        );
+                        productRepository.save(product);
+                    });
         }
 
         order.setStatus("CANCELADO");
