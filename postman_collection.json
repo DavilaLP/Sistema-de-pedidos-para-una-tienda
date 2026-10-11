@@ -1,679 +1,408 @@
 {
-	"info": {
-		"_postman_id": "893c52e4-9844-42b7-bdc1-7a711ee0e4a7",
-		"name": "Sistema de Pedidos - APF2",
-		"description": "Colección de endpoints para el segundo avance (APF2) - Sistema de Pedidos con JWT, Spring Security y Base de datos MySQL. Incluye scripts automáticos (Tests).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"variable": [
-		{
-			"key": "jwt_token",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "admin_username",
-			"value": "admin",
-			"type": "string"
-		},
-		{
-			"key": "admin_password",
-			"value": "admin123",
-			"type": "string"
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{jwt_token}}",
-				"type": "string"
-			}
-		]
-	},
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"item": [
-		{
-			"name": "Autenticación",
-			"item": [
-				{
-					"name": "Login (Obtener JWT)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Token JWT recibido correctamente\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.token).to.not.be.undefined;",
-									"    pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/auth/login",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"auth",
-								"login"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Productos",
-			"item": [
-				{
-					"name": "Listar todos los productos",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Retorna catálogo de productos no vacío\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an(\"array\");",
-									"    pm.expect(jsonData.length).to.be.above(0);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/products",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"products"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener producto por ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Producto encontrado con ID solicitado\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.id).to.eql(1);",
-									"    pm.expect(jsonData.name).to.not.be.null;",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/products/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"products",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener producto inexistente (Error 404 - Not Found)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 404 Not Found\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"pm.test(\"Estructura de error 404 válida\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.status).to.eql(404);",
-									"    pm.expect(jsonData.error).to.eql(\"Not Found\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/products/9999",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"products",
-								"9999"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Crear nuevo producto",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 201 Created\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"pm.test(\"Producto creado con ID asignado\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.id).to.not.be.null;",
-									"    pm.expect(jsonData.name).to.eql(\"Monitor Ultrawide 34\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Monitor Ultrawide 34\",\n    \"price\": 450.00,\n    \"stock\": 10\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/products",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"products"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Validar producto (Bad Request)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 400 Bad Request\", function () {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"pm.test(\"Error de validación retornado\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.error).to.eql(\"Validation Error\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"\",\n    \"price\": -10.00,\n    \"stock\": -5\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/products",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"products"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Actualizar producto",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Producto actualizado con nuevos datos\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.name).to.eql(\"Laptop Gamer Pro 16\");",
-									"    pm.expect(jsonData.stock).to.eql(20);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Laptop Gamer Pro 16\",\n    \"price\": 1350.00,\n    \"stock\": 20\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/products/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"products",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Eliminar producto",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Confirmación de producto eliminado\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.message).to.include(\"eliminado\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/products/4",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"products",
-								"4"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Pedidos",
-			"item": [
-				{
-					"name": "Crear pedido (Éxito)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 201 Created\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"pm.test(\"Pedido creado con total calculado y estado PENDIENTE\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.id).to.not.be.null;",
-									"    pm.expect(jsonData.clientName).to.eql(\"Carlos Mendoza\");",
-									"    pm.expect(jsonData.status).to.eql(\"PENDIENTE\");",
-									"    pm.expect(jsonData.total).to.be.above(0);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"clientName\": \"Carlos Mendoza\",\n    \"items\": [\n        {\n            \"productId\": 1,\n            \"quantity\": 2\n        },\n        {\n            \"productId\": 2,\n            \"quantity\": 1\n        }\n    ]\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/orders",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"orders"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Listar todos los pedidos",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Lista de pedidos contiene elementos\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an(\"array\");",
-									"    pm.expect(jsonData.length).to.be.above(0);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/orders",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"orders"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener pedido por ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Pedido recuperado correctamente\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.id).to.eql(1);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/orders/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"orders",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Crear pedido (Error 400 - Stock Insuficiente)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 400 Bad Request\", function () {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"pm.test(\"Validación de stock insuficiente activada\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.status).to.eql(400);",
-									"    pm.expect(jsonData.message).to.include(\"Stock insuficiente\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"clientName\": \"Carlos Mendoza\",\n    \"items\": [\n        {\n            \"productId\": 1,\n            \"quantity\": 999\n        }\n    ]\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/orders",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"orders"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Actualizar estado de pedido",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Estado actualizado a PAGADO\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.status).to.eql(\"PAGADO\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/orders/1/status?status=PAGADO",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"orders",
-								"1",
-								"status"
-							],
-							"query": [
-								{
-									"key": "status",
-									"value": "PAGADO"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Cancelar pedido (Devuelve stock)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code es 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Pedido cancelado y mensaje confirmatorio\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.status).to.eql(\"CANCELADO\");",
-									"    pm.expect(jsonData.message).to.include(\"cancelado\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/orders/1/cancel",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"orders",
-								"1",
-								"cancel"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	]
+  "info": {
+    "name": "Sistema de Pedidos - APF2",
+    "description": "Pruebas automáticas con JWT e IDs dinámicos. Ejecutar la colección completa en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "admin_username", "value": "admin" },
+    { "key": "admin_password", "value": "admin123" },
+    { "key": "jwt_token", "value": "" },
+    { "key": "producto_id", "value": "" },
+    { "key": "pedido_id", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{jwt_token}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "01 - Login",
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\":\"{{admin_username}}\",\"password\":\"{{admin_password}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('jwt_token', '');",
+              "pm.collectionVariables.set('producto_id', '');",
+              "pm.collectionVariables.set('pedido_id', '');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Recibe JWT y rol ADMIN', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.token).to.be.a('string').and.not.empty;",
+              "  pm.expect(data.role).to.eql('ADMIN');",
+              "  pm.collectionVariables.set('jwt_token', data.token);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Crear producto de prueba",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"Monitor de prueba APF2\",\"price\":450,\"stock\":10}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Crear producto responde 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('Producto creado correctamente', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.id).to.be.a('number').and.above(0);",
+              "  pm.expect(data.name).to.eql('Monitor de prueba APF2');",
+              "  pm.expect(data.price).to.eql(450);",
+              "  pm.expect(data.stock).to.eql(10);",
+              "  pm.collectionVariables.set('producto_id', data.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Listar productos",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/products"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Listar productos responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Catalogo incluye el producto creado', function () {",
+              "  const data = pm.response.json();",
+              "  const id = Number(pm.collectionVariables.get('producto_id'));",
+              "  pm.expect(data).to.be.an('array');",
+              "  pm.expect(data.some(p => p.id === id)).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Obtener producto por ID",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/products/{{producto_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Consultar producto responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Recupera el producto correcto', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.id).to.eql(Number(pm.collectionVariables.get('producto_id')));",
+              "  pm.expect(data.stock).to.eql(10);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Producto inexistente",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/products/0"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Producto inexistente responde 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('Error 404 tiene estructura correcta', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.status).to.eql(404);",
+              "  pm.expect(data.error).to.eql('Not Found');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Validar producto incorrecto",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"\",\"price\":-10,\"stock\":-5}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Producto invalido responde 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('Devuelve error de validacion', function () {",
+              "  pm.expect(pm.response.json().error).to.eql('Validation Error');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Actualizar producto de prueba",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/products/{{producto_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"Monitor actualizado APF2\",\"price\":500,\"stock\":20}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Actualizar producto responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Producto actualizado correctamente', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.name).to.eql('Monitor actualizado APF2');",
+              "  pm.expect(data.price).to.eql(500);",
+              "  pm.expect(data.stock).to.eql(20);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Crear pedido",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"clientName\":\"Carlos Mendoza\",\"items\":[{\"productId\":{{producto_id}},\"quantity\":2}]}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Crear pedido responde 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('Pedido tiene total y estado correctos', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.id).to.be.a('number').and.above(0);",
+              "  pm.expect(data.clientName).to.eql('Carlos Mendoza');",
+              "  pm.expect(data.status).to.eql('PENDIENTE');",
+              "  pm.expect(data.total).to.eql(1000);",
+              "  pm.expect(data.items[0].productId).to.eql(Number(pm.collectionVariables.get('producto_id')));",
+              "  pm.collectionVariables.set('pedido_id', data.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Listar pedidos",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Listar pedidos responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Lista incluye el pedido creado', function () {",
+              "  const data = pm.response.json();",
+              "  const id = Number(pm.collectionVariables.get('pedido_id'));",
+              "  pm.expect(data).to.be.an('array');",
+              "  pm.expect(data.some(p => p.id === id)).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Obtener pedido por ID",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/orders/{{pedido_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Consultar pedido responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Recupera el pedido correcto', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.id).to.eql(Number(pm.collectionVariables.get('pedido_id')));",
+              "  pm.expect(data.total).to.eql(1000);",
+              "  pm.expect(data.status).to.eql('PENDIENTE');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Pedido con stock insuficiente",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"clientName\":\"Carlos Mendoza\",\"items\":[{\"productId\":{{producto_id}},\"quantity\":999}]}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Stock insuficiente responde 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('Explica el stock insuficiente', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.status).to.eql(400);",
+              "  pm.expect(data.message).to.include('Stock insuficiente');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Cambiar pedido a PAGADO",
+      "request": {
+        "method": "PUT",
+        "url": "{{base_url}}/api/orders/{{pedido_id}}/status?status=PAGADO"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Actualizar estado responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Pedido queda PAGADO', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.id).to.eql(Number(pm.collectionVariables.get('pedido_id')));",
+              "  pm.expect(data.status).to.eql('PAGADO');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Cancelar pedido",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/orders/{{pedido_id}}/cancel"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Cancelar pedido responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Confirma la cancelacion del pedido correcto', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.orderId).to.eql(Number(pm.collectionVariables.get('pedido_id')));",
+              "  pm.expect(data.status).to.eql('CANCELADO');",
+              "  pm.expect(data.message).to.include('cancelado');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Eliminar producto de prueba",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/products/{{producto_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Eliminar producto responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Confirma la eliminacion', function () {",
+              "  pm.expect(pm.response.json().message).to.include('eliminado');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
 }
