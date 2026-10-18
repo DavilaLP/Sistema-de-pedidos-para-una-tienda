@@ -59,20 +59,32 @@ El proyecto está acotado a **2 recursos principales** y **1 recurso de relació
 2.  **Pedido (`Order`):** Atributos `id`, `clientName`, `orderDate`, `items`, `total`, `status`.
 3.  **Detalle del Pedido (`OrderItem`):** Atributos `productId`, `productName`, `quantity`, `unitPrice`.
 
-### ✅ Funcionalidades Incluidas (APF1 y APF2)
-*   **Gestión de Productos (CRUD):** Crear, listar, consultar por ID, actualizar y eliminar productos.
-*   **Gestión de Pedidos:** Registro de pedidos con cálculo automático de totales y asociación de ítems.
-*   **Control de Inventario:** Validación de stock disponible al momento de crear un pedido y descuento automático de existencias.
-*   **Gestión de Estados y Cancelación:** Modificación de estado del pedido (`PENDIENTE`, `PAGADO`, `CANCELADO`) y devolución automática de stock al cancelar.
-*   **Manejo Global de Excepciones:** Respuestas HTTP normalizadas (`400 Bad Request`, `404 Not Found`) con DTO de error.
-*   **Persistencia (APF2):** Base de datos relacional MySQL (en producción) y H2 (para pruebas) integradas mediante Spring Data JPA e Hibernate.
-*   **Seguridad y Roles (APF2):** Autenticación sin estado usando JSON Web Tokens (JWT). Roles diferenciados (`ADMIN` para catálogo/gestión total, y `CLIENTE` para crear órdenes).
-*   **Validaciones (APF2):** Filtros de validación de entradas HTTP con Jakarta Validation (`@Valid`, `@NotBlank`, `@Min`, `@Positive`) en todos los DTOs.
+### ✅ Funcionalidades Incluidas en APF1
 
-### 🚫 Funcionalidades Excluidas (Planificadas para avances posteriores)
-*   Interfaz gráfica de usuario y componentes frontend desarrollados en Angular (programado para **APF3 - Semana 15**).
-*   Despliegue e infraestructura en la nube / Cloud (programado para **Entrega Final - Semana 18**).
+* **Gestión de Productos (CRUD):** Crear, listar, consultar por ID, actualizar y eliminar productos.
+* **Gestión de Pedidos:** Registrar pedidos con sus productos, calcular automáticamente el total y asociar los detalles correspondientes.
+* **Control de Inventario:** Validar la disponibilidad de stock al crear un pedido y descontar las unidades solicitadas.
+* **Gestión de Estados y Cancelación:** Cambiar el estado de los pedidos entre `PENDIENTE`, `PAGADO` y `CANCELADO`. Al cancelar un pedido, se devuelve el stock al inventario.
+* **Manejo Global de Excepciones:** Devolver respuestas HTTP normalizadas, como `400 Bad Request` y `404 Not Found`, mediante un DTO de error.
 
+### ✅ Funcionalidades Incorporadas en APF2
+
+* **Persistencia con Spring Data JPA e Hibernate:** Se reemplazó el almacenamiento temporal por una base de datos relacional MySQL. Para las pruebas automatizadas se utiliza H2 en memoria.
+* **Consulta de pedidos por estado:** Se incorporó una consulta JPQL para filtrar pedidos por `PENDIENTE`, `PAGADO` o `CANCELADO`, ordenados desde el más reciente. Se usa `LEFT JOIN FETCH` para cargar los detalles del pedido en la misma consulta.
+* **Transacciones para pedidos e inventario:** La creación de pedidos y el descuento de stock se ejecutan como una única operación. Si ocurre un error, se revierten los cambios para evitar descuentos parciales o pedidos incompletos.
+* **Cancelación segura de pedidos:** La cancelación y la devolución de stock se realizan en una transacción. Cancelar un pedido más de una vez no vuelve a sumar el stock, y un pedido cancelado no puede reactivarse.
+* **Seguridad con Spring Security y roles:** Se añadieron los roles `ADMIN` y `CLIENTE`. Ambos pueden consultar productos y crear pedidos; solo `ADMIN` puede gestionar productos y acceder a las demás operaciones de pedidos.
+* **Autenticación con JWT y contraseñas BCrypt:** El endpoint público `POST /auth/login` valida las credenciales y entrega un token JWT de tipo Bearer. Un filtro valida el token en las solicitudes protegidas.
+* **Validación de entradas:** Se incorporaron validaciones con Jakarta Validation, como `@Valid`, `@NotBlank`, `@Min` y `@Positive`, para rechazar datos inválidos.
+* **Pruebas automatizadas del backend:** Se reportan 32 pruebas para verificar servicios, persistencia, consultas JPQL, transacciones, seguridad, permisos, validaciones y respuestas HTTP.
+* **Colección automatizada de Postman:** Incluye 14 solicitudes y 28 comprobaciones para probar autenticación, permisos, operaciones de productos y pedidos, IDs dinámicos y respuestas de error.
+* **Prototipo de interfaz web:** El proyecto incluye una interfaz de prueba en `index.html` para mostrar pantallas de inicio de sesión, catálogo, pedidos, inventario, pagos simulados y cancelación. Este archivo todavía no está servido desde la raíz del backend.
+
+### 🚫 Funcionalidades Excluidas o Pendientes
+
+* **Frontend desarrollado en Angular:** Está planificado para **APF3 - Semana 15**. El prototipo actual está hecho en HTML, CSS y JavaScript, y todavía no está integrado como una aplicación Angular servida por el backend.
+* **Procesamiento real de pagos:** La interfaz contiene una simulación visual del pago.
+* **Despliegue e infraestructura en la nube:** Se mantiene planificado para la **Entrega Final - Semana 18**.
 ---
 
 ## 📊 3. Modelo Simple (Conceptos y Relaciones)
