@@ -1,6 +1,6 @@
 # 📦 Sistema de Gestión de Inventario y Pedidos para una Tienda
 
-Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3** y **Java 17**, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF2 (Semana 10)** de Desarrollo Web Integrado (UTP).
+Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3** y **Java 21**, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF2 (Semana 10)** de Desarrollo Web Integrado (UTP).
 
 ### 👥 Integrantes del Equipo
 * **Davila Guerra, Duvan Isai** — Participación: **100%**
@@ -198,13 +198,13 @@ Para el desarrollo del validador de stock al crear pedidos, aplicamos la discipl
 ## 🚀 8. Instrucciones para Ejecutar y Validar
 
 ### Requisitos Previos
-*   Java 17 o superior instalado.
+*   Java 21 o superior instalado.
 *   Maven 3.x instalado.
 
 ### Clonación y Configuración del Entorno
-Establecer la variable `JAVA_HOME` para utilizar el JDK 17 (en PowerShell):
+Establecer la variable `JAVA_HOME` para utilizar el JDK 21 (en PowerShell):
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.15.6-hotspot"
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"
 ```
 
 ### Ejecutar las Pruebas Unitarias (TDD con JUnit 5)
@@ -227,10 +227,36 @@ El servidor embebido Tomcat iniciará en el puerto `8080`.
 
 ## 📬 9. Pruebas Automatizadas en Postman (Collection Runner)
 
-El proyecto incluye la colección [`postman_collection.json`](file:///c:/Users/Usuario/Documents/Sistema%20de%20pedidos%20para%20una%20tienda/postman_collection.json) preconfigurada con variables de colección, validación de JWT y aserciones.
+El proyecto incluye la colección [`postman_collection.json`](./postman_collection.json) preconfigurada con variables de colección, validación de JWT y aserciones automáticas. La suite contiene **15 requests** y **30 assertions** que pasan al 100%.
+
+### Resumen de la colección:
+| # | Nombre | Método | Resultado esperado |
+|---|--------|--------|--------------------|
+| 01 | Login (ADMIN) | POST | 200 + JWT |
+| 02 | Crear producto | POST | 201 |
+| 03 | Listar productos | GET | 200 |
+| 04 | Obtener producto por ID | GET | 200 |
+| 05 | Producto inexistente | GET | 404 |
+| 06 | Validar producto incorrecto | POST | 400 |
+| 07 | Actualizar producto | PUT | 200 |
+| 08 | Crear pedido | POST | 201 |
+| 09 | Listar pedidos | GET | 200 |
+| 10 | Obtener pedido por ID | GET | 200 |
+| 11 | Pedido con stock insuficiente | POST | 400 |
+| 12 | Cambiar pedido a PAGADO | PUT | 200 |
+| 13 | Cancelar pedido | POST | 200 |
+| 14 | Eliminar producto | DELETE | 200 |
+| 15 | **Acceso denegado CLIENTE (403)** | GET | **403 Forbidden** |
 
 ### Pasos para ejecutar la suite automatizada:
 1. Importar `postman_collection.json` en Postman.
-2. Hacer clic sobre la colección **`Sistema de Pedidos - APF2`** $\rightarrow$ seleccionar **Run**.
+2. Hacer clic sobre la colección **`Sistema de Pedidos - APF2`** → seleccionar **Run**.
 3. Hacer clic en **Run Sistema de Pedidos - APF2**.
-4. **Resultado:** Se ejecutará primero el script de autenticación (Login), almacenará automáticamente el token JWT y ejecutará las demás peticiones usando el token portador, validando que los datos persistidos y las respuestas coincidan correctamente.
+4. **Resultado esperado:** 15 requests ejecutadas, **30 assertions aprobadas, 0 fallidas**.
+
+> **Nota sobre el request 15:** El prerequest script hace login automático como usuario `CLIENTE` y luego intenta acceder a `GET /api/orders` (recurso exclusivo de `ADMIN`). El sistema responde con `403 Forbidden` y un JSON estructurado: `{"status": 403, "error": "Forbidden", "message": "No tienes permisos para realizar esta acción"}`, demostrando que el control de acceso por roles funciona correctamente.
+
+### Ejecución vía CLI (Newman):
+```powershell
+npx newman run postman_collection.json --delay-request 300
+```

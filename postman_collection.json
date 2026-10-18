@@ -10,7 +10,8 @@
     { "key": "admin_password", "value": "admin123" },
     { "key": "jwt_token", "value": "" },
     { "key": "producto_id", "value": "" },
-    { "key": "pedido_id", "value": "" }
+    { "key": "pedido_id", "value": "" },
+    { "key": "cliente_token", "value": "" }
   ],
   "auth": {
     "type": "bearer",
@@ -398,6 +399,55 @@
               "pm.test('Eliminar producto responde 200', function () { pm.response.to.have.status(200); });",
               "pm.test('Confirma la eliminacion', function () {",
               "  pm.expect(pm.response.json().message).to.include('eliminado');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Acceso denegado CLIENTE (403)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            { "key": "token", "value": "{{cliente_token}}", "type": "string" }
+          ]
+        },
+        "method": "GET",
+        "url": "{{base_url}}/api/orders"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const loginReq = {",
+              "  url: pm.collectionVariables.get('base_url') + '/auth/login',",
+              "  method: 'POST',",
+              "  header: { 'Content-Type': 'application/json' },",
+              "  body: { mode: 'raw', raw: JSON.stringify({ username: 'cliente', password: 'cliente123' }) }",
+              "};",
+              "pm.sendRequest(loginReq, function (err, res) {",
+              "  if (!err && res.code === 200) {",
+              "    pm.collectionVariables.set('cliente_token', res.json().token);",
+              "  }",
+              "});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('CLIENTE sin permisos recibe 403', function () { pm.response.to.have.status(403); });",
+              "pm.test('Respuesta 403 tiene estructura correcta', function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.status).to.eql(403);",
+              "  pm.expect(data.error).to.eql('Forbidden');",
+              "  pm.expect(data.message).to.include('permisos');",
               "});"
             ]
           }
