@@ -20,8 +20,12 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -43,12 +47,15 @@ public class SecurityConfig {
         http
                 // API stateless con JWT: sin sesiones ni cookies, por eso CSRF no aplica
                 .csrf(AbstractHttpConfigurer::disable)
+                // CORS: permitir peticiones desde el frontend React (localhost:5173)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Público: raíz y login
+                        // Público: raíz, login y preflight CORS
                         .requestMatchers("/", "/error").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         // ADMIN y CLIENTE: ver el catálogo y crear pedidos
                         .requestMatchers(HttpMethod.GET, "/api/products/**").hasAnyRole("ADMIN", "CLIENTE")
@@ -64,6 +71,19 @@ public class SecurityConfig {
                         .authenticationEntryPoint(unauthorizedHandler())
                         .accessDeniedHandler(forbiddenHandler()));
         return http.build();
+    }
+
+    /** CORS: permite al frontend React (localhost:5173) llamar al backend. */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     /** 401: no se presentó autenticación válida. */
