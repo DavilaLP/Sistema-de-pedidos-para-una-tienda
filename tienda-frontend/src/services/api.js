@@ -27,6 +27,8 @@ api.interceptors.response.use(
     if (status === 401) {
       localStorage.clear();
       window.location.href = '/login';
+    } else if (status === 403) {
+      window.location.href = '/forbidden';
     }
 
     return Promise.reject({ status, message });

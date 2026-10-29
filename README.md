@@ -1,6 +1,6 @@
 # 📦 Sistema de Gestión de Inventario y Pedidos para una Tienda
 
-Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3** y **Java 21**, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF2 (Semana 10)** de Desarrollo Web Integrado (UTP).
+Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3 (Java 21)** en el backend y **React 19 + Vite** en el frontend, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF3 (Semana 15)** del curso Desarrollo Web Integrado (UTP).
 
 ### 👥 Integrantes del Equipo
 * **Davila Guerra, Duvan Isai** — Participación: **100%**
@@ -18,13 +18,13 @@ El sistema es el núcleo operativo de una tienda que comercializa productos tecn
 
 1. **Gestión Integral de Inventario (Catálogo de Productos):**
    * Controla los artículos disponibles, sus precios unitarios y sus niveles de stock en tiempo real.
-   * Permite dar de alta nuevos productos, consultar existencias, modificar datos y retirar artículos descatalogados (CRUD completo).
-   * Semilla de datos inicial precargada (Laptops, Teclados Mecánicos, Mouse Gamer, Auriculares).
+   * Permite dar de alta nuevos productos, consultar existencias, modificar datos y retirar artículos descatalogados (CRUD completo desde la interfaz web y REST).
+   * Semilla de datos inicial precargada en MySQL.
 
 2. **Motor de Reserva y Descuento Automático de Stock:**
    * Al recibir una orden de compra, el sistema valida inmediatamente si cada producto solicitado cuenta con stock suficiente.
    * Si hay stock disponible, **se descuenta automáticamente del inventario** y se genera la orden en estado `PENDIENTE`.
-   * Si no hay existencias suficientes de algún producto, la operación se cancela en su totalidad (operación atómica), protegiendo la integridad del inventario y respondiendo con un error descriptivo (`400 Bad Request`).
+   * Si no hay existencias suficientes de algún producto, la operación se cancela en su totalidad (operación atómica `@Transactional`), protegiendo la integridad del inventario y respondiendo con un error descriptivo (`400 Bad Request`).
 
 3. **Cálculo Transparente de Totales:**
    * Congela el precio unitario del producto en el momento exacto de la compra dentro del detalle del pedido (`OrderItem`).
@@ -39,57 +39,79 @@ El sistema es el núcleo operativo de una tienda que comercializa productos tecn
 ## 📝 1. Problema y Contexto de Negocio
 
 ### ¿Quién usa el sistema?
-*   **Clientes de la tienda:** Realizan pedidos seleccionando productos del catálogo.
-*   **Administradores de la tienda:** Gestionan el inventario de productos y supervisan el estado de los pedidos realizados.
+* **Administradores de la tienda:** Gestionan el catálogo de productos (CRUD), supervisan pedidos y gestionan pagos y cancelaciones.
+* **Clientes de la tienda:** Consultan el catálogo de productos disponibles en tiempo real.
 
 ### ¿Qué necesidad resuelve?
 En una tienda pequeña o mediana, la gestión manual de pedidos suele ocasionar pérdidas por:
-1.  **Falta de stock inesperada:** Vender productos que no están disponibles físicamente.
-2.  **Errores en cálculos:** Errores al calcular los totales e impuestos de las órdenes de forma manual.
-3.  **Falta de trazabilidad:** No saber en qué estado se encuentra un pedido (*Pendiente, Pagado, Cancelado*).
+1. **Falta de stock inesperada:** Vender productos que no están disponibles físicamente.
+2. **Errores en cálculos:** Errores al calcular los totales e importes de las órdenes de forma manual.
+3. **Falta de trazabilidad:** No saber en qué estado se encuentra un pedido (*Pendiente, Pagado, Cancelado*).
 
 Este sistema automatiza estos procesos, descontando stock de manera inmediata al ingresar un pedido, calculando totales de forma transparente y manteniendo estados legibles de cada compra.
 
 ---
 
-## 📐 2. Alcance Inicial (Recursos Principales)
+## 🛠️ 2. Tabla del Stack Tecnológico Completo
 
-El proyecto está acotado a **2 recursos principales** y **1 recurso de relación**:
-1.  **Producto (`Product`):** Atributos `id`, `name`, `price`, `stock`.
-2.  **Pedido (`Order`):** Atributos `id`, `clientName`, `orderDate`, `items`, `total`, `status`.
-3.  **Detalle del Pedido (`OrderItem`):** Atributos `productId`, `productName`, `quantity`, `unitPrice`.
+A continuación se detalla el inventario completo de herramientas, frameworks y librerías utilizadas en la solución, junto con su versión exacta y responsabilidad:
 
-### ✅ Funcionalidades Incluidas en APF1
+### 2.1. Frontend (SPA — Single Page Application)
 
-* **Gestión de Productos (CRUD):** Crear, listar, consultar por ID, actualizar y eliminar productos.
-* **Gestión de Pedidos:** Registrar pedidos con sus productos, calcular automáticamente el total y asociar los detalles correspondientes.
-* **Control de Inventario:** Validar la disponibilidad de stock al crear un pedido y descontar las unidades solicitadas.
-* **Gestión de Estados y Cancelación:** Cambiar el estado de los pedidos entre `PENDIENTE`, `PAGADO` y `CANCELADO`. Al cancelar un pedido, se devuelve el stock al inventario.
-* **Manejo Global de Excepciones:** Devolver respuestas HTTP normalizadas, como `400 Bad Request` y `404 Not Found`, mediante un DTO de error.
+| Tecnología / Librería | Versión | Tipo | Responsabilidad en el Sistema |
+| :--- | :---: | :--- | :--- |
+| **React** | `19.3.1` | Biblioteca UI | Construcción declarativa y modular de interfaces mediante componentes reactivos. |
+| **React DOM** | `19.3.1` | Motor Web | Montaje y renderizado optimizado de componentes en el DOM del navegador. |
+| **Vite** | `8.3.5` | Bundler & Servidor Dev | Entorno de desarrollo ultrarrápido con Hot Module Replacement (HMR) y empaquetado optimizado. |
+| **React Router DOM** | `7.18.5` | Enrutador SPA | Gestión de rutas (`/login`, `/products`, `/orders`, `/forbidden`) y guardias de autenticación (`PrivateRoute`). |
+| **Axios** | `1.21.0` | Cliente HTTP | Peticiones asíncronas REST, inyección automática de cabecera `Authorization: Bearer <token>` y captura centralizada de errores (400, 401, 403, 404). |
+| **Context API (React)** | Nativo | Gestión de Estado | Manejo global del estado de sesión (`AuthContext`), almacenamiento del JWT en `localStorage` y métodos de login/logout. |
+| **Vanilla CSS Moderno** | Estándar CSS3 | Estilos y Diseño | Sistema visual completo en modo oscuro, variables globales HSL, efectos de cristal (glassmorphism), modales y alertas reactivas. |
 
-### ✅ Funcionalidades Incorporadas en APF2
+### 2.2. Backend (API REST Empresarial)
 
-* **Persistencia con Spring Data JPA e Hibernate:** Se reemplazó el almacenamiento temporal por una base de datos relacional MySQL. Para las pruebas automatizadas se utiliza H2 en memoria.
-* **Consulta de pedidos por estado:** Se incorporó una consulta JPQL para filtrar pedidos por `PENDIENTE`, `PAGADO` o `CANCELADO`, ordenados desde el más reciente. Se usa `LEFT JOIN FETCH` para cargar los detalles del pedido en la misma consulta.
-* **Transacciones para pedidos e inventario:** La creación de pedidos y el descuento de stock se ejecutan como una única operación. Si ocurre un error, se revierten los cambios para evitar descuentos parciales o pedidos incompletos.
-* **Cancelación segura de pedidos:** La cancelación y la devolución de stock se realizan en una transacción. Cancelar un pedido más de una vez no vuelve a sumar el stock, y un pedido cancelado no puede reactivarse.
-* **Seguridad con Spring Security y roles:** Se añadieron los roles `ADMIN` y `CLIENTE`. Ambos pueden consultar productos y crear pedidos; solo `ADMIN` puede gestionar productos y acceder a las demás operaciones de pedidos.
-* **Autenticación con JWT y contraseñas BCrypt:** El endpoint público `POST /auth/login` valida las credenciales y entrega un token JWT de tipo Bearer. Un filtro valida el token en las solicitudes protegidas.
-* **Validación de entradas:** Se incorporaron validaciones con Jakarta Validation, como `@Valid`, `@NotBlank`, `@Min` y `@Positive`, para rechazar datos inválidos.
-* **Pruebas automatizadas del backend:** Se reportan 32 pruebas para verificar servicios, persistencia, consultas JPQL, transacciones, seguridad, permisos, validaciones y respuestas HTTP.
-* **Colección automatizada de Postman:** Incluye 14 solicitudes y 28 comprobaciones para probar autenticación, permisos, operaciones de productos y pedidos, IDs dinámicos y respuestas de error.
-* **Prototipo de interfaz web:** El proyecto incluye una interfaz de prueba en `index.html` para mostrar pantallas de inicio de sesión, catálogo, pedidos, inventario, pagos simulados y cancelación. Este archivo todavía no está servido desde la raíz del backend.
+| Tecnología / Librería | Versión | Tipo | Responsabilidad en el Sistema |
+| :--- | :---: | :--- | :--- |
+| **Java** | `21` (LTS) | Lenguaje Base | Plataforma de programación y compilación del backend. |
+| **Spring Boot** | `3.3.0` | Framework Core | Servidor Tomcat embebido, inyección de dependencias y configuración automática. |
+| **Spring Web (MVC)** | `3.3.0` | Framework Web | Controladores RESTful (`@RestController`), endpoints JSON y negociación HTTP. |
+| **Spring Security** | `6.x` | Seguridad | Filtro sin estado (stateless), autorización por roles (`ADMIN`, `CLIENTE`) y configuración CORS para `localhost:5173`. |
+| **JJWT (io.jsonwebtoken)** | `0.12.6` | Seguridad JWT | Emisión, firma criptográfica HMAC-SHA256 y verificación de tokens Bearer. |
+| **Jakarta Validation** | `3.0` | Validación | Restricciones de validación sobre DTOs (`@NotBlank`, `@Positive`, `@Min`). |
+| **Spring Data JPA** | `3.3.0` | Persistencia / ORM | Repositorios (`JpaRepository`), transacciones atómicas (`@Transactional`) y consultas JPQL optimizadas (`LEFT JOIN FETCH`). |
+| **Hibernate Core** | `6.5` | Motor ORM | Mapeo relacional de entidades (`Product`, `Order`, `OrderItem`, `User`) a tablas MySQL. |
+| **Lombok** | `1.18.38` | Utilidad de Código | Generación automática de getters, setters, constructores y builders. |
 
-### 🚫 Funcionalidades Excluidas o Pendientes
+### 2.3. Persistencia, Testing y Herramientas
 
-* **Frontend desarrollado en Angular:** Está planificado para **APF3 - Semana 15**. El prototipo actual está hecho en HTML, CSS y JavaScript, y todavía no está integrado como una aplicación Angular servida por el backend.
-* **Procesamiento real de pagos:** La interfaz contiene una simulación visual del pago.
-* **Despliegue e infraestructura en la nube:** Se mantiene planificado para la **Entrega Final - Semana 18**.
+| Herramienta | Versión | Tipo | Responsabilidad en el Sistema |
+| :--- | :---: | :--- | :--- |
+| **MySQL Server** | `8.0+` | SGBD Relacional | Base de datos principal (`tienda_pedidos`) para persistencia de usuarios, catálogo y órdenes. |
+| **MySQL Connector/J** | `8.3.0` | Driver JDBC | Conexión de bajo nivel entre Spring Boot y MySQL. |
+| **H2 Database** | `2.2.x` | BD en Memoria | Entorno aislado para pruebas automatizadas sin afectar la BD MySQL real. |
+| **JUnit 5 & Mockito** | `5.10` / `5.11` | Testing Unitario | Suite de 32 pruebas automatizadas bajo metodología TDD. |
+| **Spring Test / MockMvc**| `3.3.0` | Testing Integración | Verificación de contratos HTTP y respuestas JSON en controladores. |
+| **Postman / Newman** | `v10+` / `v6+` | Pruebas de API | Colección automatizada con 15 solicitudes y 30 assertions (100% aprobadas). |
+| **Git / GitHub** | `2.x` | Control de Versiones | Historial progresivo de 10 commits descriptivos para APF3. |
+
 ---
 
-## 📊 3. Modelo Simple (Conceptos y Relaciones)
+## 📐 3. Evolución del Proyecto por Avances
 
-El modelo de clases es el siguiente:
+* **APF1 (Semana 5):** API REST inicial, controladores, servicios, repositorio en memoria, arquitectura por capas y pruebas unitarias con TDD.
+* **APF2 (Semana 10):** Persistencia con Spring Data JPA y MySQL, consultas JPQL, transaccionalidad atómica, seguridad Spring Security con roles (`ADMIN`, `CLIENTE`), contraseñas BCrypt, autenticación JWT y suite de Postman.
+* **APF3 (Semana 15 - Avance Actual):**
+  * Aplicación cliente SPA completa construida con **React + Vite**.
+  * Enrutamiento con React Router DOM v7 y rutas privadas (`PrivateRoute`) con protección de acceso por rol (`ADMIN` / `CLIENTE`).
+  * Consumo asíncrono con Axios e interceptores automáticos para Bearer JWT.
+  * CRUD visual completo de productos (crear, listar, editar con modal y eliminar).
+  * Creación y gestión de pedidos con selección dinámica de catálogo, validación de stock y cálculo de totales.
+  * Manejo integral de errores HTTP visibles en pantalla: `400 Bad Request` (stock insuficiente), `401 Unauthorized` (credenciales inválidas o expiración), `403 Forbidden` (pantalla de acceso denegado) y `404 Not Found`.
+  * Configuración global de CORS en el backend Spring Boot para habilitar comunicación segura con `http://localhost:5173`.
+
+---
+
+## 📊 4. Modelo de Clases y Dominio
 
 ```
 +---------------+ 1        1..* +-------------+
@@ -112,151 +134,97 @@ El modelo de clases es el siguiente:
                                 +-------------+
 ```
 
-*   Un **Pedido (`Order`)** contiene uno o más **Detalles (`OrderItem`)**.
-*   Cada **Detalle (`OrderItem`)** está asociado a un único **Producto (`Product`)** y guarda el precio unitario histórico en el momento de la compra.
-
 ---
 
-## 🌐 4. Matriz de Endpoints
-
-### 🏠 Punto de Entrada / Bienvenida (`/`)
-| Método | URI | Entrada | Respuesta Esperada (JSON) | Código HTTP |
-| :--- | :--- | :--- | :--- | :---: |
-| **GET** | `/` | Ninguna | Estado del sistema, versión APF2 y enlaces a las APIs | `200 OK` |
+## 🌐 5. Matriz de Endpoints (Backend REST API)
 
 ### 🔒 Autenticación (`/auth`)
-| Método | URI | Entrada (JSON) | Respuesta Esperada (JSON) | Código HTTP |
+| Método | URI | Entrada (JSON) | Respuesta Esperada | Código HTTP |
 | :--- | :--- | :--- | :--- | :---: |
-| **POST** | `/auth/login` | `{"username", "password"}` | Token JWT para acceder a recursos protegidos | `200 OK` |
+| **POST** | `/auth/login` | `{"username", "password"}` | Token JWT y datos del usuario | `200 OK` |
 
 ### 🍎 Módulo de Productos (`/api/products`)
-
-| Método | URI | Entrada (JSON / Params) | Respuesta Esperada (JSON) | Código HTTP |
-| :--- | :--- | :--- | :--- | :---: |
-| **GET** | `/api/products` | Ninguna | Listado de productos disponibles | `200 OK` |
-| **GET** | `/api/products/{id}` | Path Variable: `id` | Detalle del producto solicitado | `200 OK` |
-| **POST** | `/api/products` | Cuerpo: `{"name", "price", "stock"}` | Producto creado con su ID generado | `201 Created` |
-| **PUT** | `/api/products/{id}` | Cuerpo: `{"name", "price", "stock"}` | Producto modificado con nuevos valores | `200 OK` |
-| **DELETE** | `/api/products/{id}` | Path Variable: `id` | Confirmación en JSON de producto eliminado | `200 OK` |
+| Método | URI | Permiso | Descripción | Código HTTP |
+| :--- | :--- | :---: | :--- | :---: |
+| **GET** | `/api/products` | Público / Todos | Listar catálogo completo de productos | `200 OK` |
+| **GET** | `/api/products/{id}` | Público / Todos | Consultar producto por su ID | `200 OK` |
+| **POST** | `/api/products` | `ADMIN` | Crear nuevo producto con precio y stock | `201 Created` |
+| **PUT** | `/api/products/{id}` | `ADMIN` | Modificar datos de producto existente | `200 OK` |
+| **DELETE** | `/api/products/{id}` | `ADMIN` | Eliminar producto del inventario | `200 OK` |
 
 ### 📦 Módulo de Pedidos (`/api/orders`)
-
-| Método | URI | Entrada (JSON / Params) | Respuesta Esperada (JSON) | Código HTTP |
-| :--- | :--- | :--- | :--- | :---: |
-| **GET** | `/api/orders` | Ninguna | Listado de todos los pedidos | `200 OK` |
-| **GET** | `/api/orders/{id}` | Path Variable: `id` | Detalle del pedido solicitado | `200 OK` |
-| **POST** | `/api/orders` | Cuerpo: `{"clientName", "items": [{"productId", "quantity"}]}` | Pedido creado con total calculado y stock restado | `201 Created` |
-| **PUT** | `/api/orders/{id}/status` | Request Param: `?status=PAGADO` | Pedido con estado modificado | `200 OK` |
-| **POST** | `/api/orders/{id}/cancel` | Path Variable: `id` | Confirmación en JSON de pedido cancelado y reposición de existencias | `200 OK` |
-
----
-
-## 🛠️ 5. Arquitectura del Proyecto
-
-El backend utiliza una arquitectura por capas desacopladas mediante inyección de dependencias por constructor:
-
-*   **`model`**: Contiene las entidades POJO de negocio mapeadas a MySQL mediante anotaciones JPA (`@Entity`, `@Table`).
-*   **`repository`**: Interfaces de Spring Data JPA (`JpaRepository`) que resuelven operaciones SQL de forma automática y optimizada.
-*   **`service`**: Capa lógica de negocio (validación de stock, cálculo de totales, retorno de stock) protegida mediante anotaciones de transaccionalidad (`@Transactional`).
-*   **`controller`**: Exposición de los endpoints REST en formato JSON.
-*   **`security`**: Filtros JWT sin estado (`JwtAuthFilter`), servicio de tokens y encriptación de contraseñas con BCrypt.
-*   **`exception`**: Captura global de excepciones (`ResourceNotFoundException`, `InsufficientStockException`, `MethodArgumentNotValidException`) mapeadas a respuestas REST estructuradas mediante `@RestControllerAdvice`.
+| Método | URI | Permiso | Descripción | Código HTTP |
+| :--- | :--- | :---: | :--- | :---: |
+| **GET** | `/api/orders` | `ADMIN` | Listar todos los pedidos con sus detalles | `200 OK` |
+| **GET** | `/api/orders/{id}` | `ADMIN` | Consultar detalle de un pedido específico | `200 OK` |
+| **POST** | `/api/orders` | Todos | Crear orden, verificar stock y descontar unidades | `201 Created` |
+| **PUT** | `/api/orders/{id}/status` | `ADMIN` | Cambiar estado del pedido a `PAGADO` | `200 OK` |
+| **POST** | `/api/orders/{id}/cancel` | `ADMIN` | Cancelar orden y reponer existencias en inventario | `200 OK` |
 
 ---
 
-## 🧪 6. Pruebas Automatizadas con JUnit 5 y Enfoque TDD
+## 🚀 6. Instrucciones para Ejecutar y Validar
 
-El proyecto utiliza **JUnit 5**, **Mockito** y **Spring Boot MockMvc** para garantizar la calidad del código. Se han implementado **pruebas automatizadas** que cubren las reglas de negocio clave, integraciones JPA, seguridad y validaciones:
+### 6.1. Iniciar el Backend (Spring Boot)
+1. Asegurarse de que el servicio MySQL esté corriendo con la base de datos `tienda_pedidos`.
+2. En NetBeans o terminal:
+   ```powershell
+   mvn spring-boot:run
+   ```
+3. El servidor iniciará en: `http://localhost:8080`.
 
-### Capa de Servicio (`OrderServiceTest.java` con JUnit 5 y Mockito)
-1.  `testCreateOrder_Success`: Valida que al crear un pedido con stock suficiente, se calcule el total correcto de manera automática, el estado inicial sea `PENDIENTE` y el stock del producto disminuya correctamente en el repositorio.
-2.  `testCreateOrder_InsufficientStock`: Valida que si se solicita una cantidad superior al stock del producto, el servicio lance una excepción `InsufficientStockException` y no guarde nada en el repositorio.
+### 6.2. Iniciar el Frontend (React + Vite)
+1. Abrir una terminal en la carpeta `tienda-frontend`:
+   ```powershell
+   cd tienda-frontend
+   npm install
+   npm run dev
+   ```
+2. Abrir el navegador en: `http://localhost:5173`.
 
-### Capa de Controlador (`OrderControllerTest.java` con MockMvc)
-3.  `testCreateOrder_Success_Returns201`: Simula un cliente REST que envía un JSON correcto para crear un pedido, esperando una respuesta HTTP `201 Created` con el cuerpo de la orden creada.
-4.  `testCreateOrder_InsufficientStock_Returns400`: Simula la petición REST con datos válidos pero que superan el stock de almacenamiento, validando que el manejador global de excepciones devuelva `400 Bad Request` y una estructura de error JSON coherente.
-
----
-
-## 🔄 7. Caso RED $\rightarrow$ GREEN $\rightarrow$ REFACTOR (Explicación del Flujo TDD)
-
-Para el desarrollo del validador de stock al crear pedidos, aplicamos la disciplina TDD de la siguiente manera:
-
-1.  **Fase RED (Fallo):**
-    *   Escribimos la prueba `testCreateOrder_InsufficientStock` en `OrderServiceTest.java` antes de implementar el método `createOrder`.
-    *   Ejecutamos la prueba con `mvn test`, la cual falló inmediatamente ya que el método en el servicio aún no validaba el stock y retornaba nulo o permitía stock negativo.
-2.  **Fase GREEN (Aprobación):**
-    *   Escribimos el código mínimo en `OrderServiceImpl.java` para verificar el stock actual del producto. Si el stock solicitado era mayor al disponible, lanzamos `InsufficientStockException`.
-    *   Ejecutamos la prueba de nuevo y pasó exitosamente.
-3.  **Fase REFACTOR (Optimización):**
-    *   Limpiamos el código del bucle de validación en el servicio, extrayendo la lógica repetitiva del cálculo de precios a métodos secundarios.
-    *   Aseguramos que el método de cancelación de pedidos devolviera adecuadamente el stock al catálogo.
-    *   Volvimos a ejecutar todas las pruebas automatizadas para garantizar que los cambios de limpieza no rompieron ninguna funcionalidad existente (Prueba de Regresión).
+### 6.3. Credenciales Demo Preconfiguradas
+| Rol | Usuario | Contraseña | Permisos |
+| :--- | :---: | :---: | :--- |
+| **ADMIN** | `admin` | `admin123` | Acceso total: CRUD de productos, ver pedidos, pagarlos y cancelarlos. |
+| **CLIENTE** | `cliente` | `cliente123` | Acceso restringido: Solo lectura del catálogo de productos. |
 
 ---
 
-## 🚀 8. Instrucciones para Ejecutar y Validar
+## 🧪 7. Pruebas Automatizadas y Códigos de Error HTTP
 
-### Requisitos Previos
-*   Java 21 o superior instalado.
-*   Maven 3.x instalado.
-
-### Clonación y Configuración del Entorno
-Establecer la variable `JAVA_HOME` para utilizar el JDK 21 (en PowerShell):
-```powershell
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"
-```
-
-### Ejecutar las Pruebas Unitarias (TDD con JUnit 5)
-* **Opción A (Desde NetBeans):** Clic derecho sobre el proyecto $\rightarrow$ seleccionar **Test** (o presionar `Alt + F6`). NetBeans abrirá la ventana gráfica mostrando la barra 100% verde con las pruebas aprobadas.
-* **Opción B (Desde PowerShell / Terminal):**
+### 7.1. Pruebas Unitarias de Backend (JUnit 5 + TDD)
+Para ejecutar las 32 pruebas automatizadas del backend:
 ```powershell
 mvn test
 ```
-Verás en consola el reporte oficial de JUnit con el total de pruebas exitosas $\rightarrow$ `BUILD SUCCESS`.
+Resultado: **`BUILD SUCCESS`** (100% de pruebas aprobadas sin fallos).
 
-### Ejecutar el Proyecto
-* **Opción A (Desde NetBeans):** Abrir el proyecto, hacer clic derecho sobre `SistemaPedidosApplication.java` $\rightarrow$ **Run File** (o presionar `Shift + F6`).
-* **Opción B (Desde PowerShell / Terminal):**
+### 7.2. Suite Automatizada en Postman (Newman)
+Para correr la colección de 15 solicitudes y 30 comprobaciones:
 ```powershell
-mvn spring-boot:run
+npx newman run postman_collection.json --delay-request 200
 ```
-El servidor embebido Tomcat iniciará en el puerto `8080`.
+Resultado: **`30 passed, 0 failed`**.
+
+### 7.3. Demostración de Errores HTTP Solicitados en la Rúbrica
+* **`401 Unauthorized`:** Ingresar credenciales erróneas en `/login` $\rightarrow$ La interfaz muestra aviso de usuario/clave inválidos.
+* **`400 Bad Request`:** Intentar crear un pedido con cantidad mayor al stock disponible $\rightarrow$ El backend rechaza la transacción y el frontend muestra alerta roja con el mensaje *"Stock insuficiente"*.
+* **`403 Forbidden`:** Iniciar sesión como `cliente` e intentar acceder manualmente a `http://localhost:5173/orders` $\rightarrow$ La guardia de rutas redirige a la pantalla `/forbidden` (Acceso Denegado).
+* **`404 Not Found`:** Consultar un producto inexistente (`GET /api/products/0`) $\rightarrow$ Retorna objeto JSON estructurado con estado 404.
 
 ---
 
-## 📬 9. Pruebas Automatizadas en Postman (Collection Runner)
+## 📜 8. Historial de Commits APF3 (Evolución Progresiva)
 
-El proyecto incluye la colección [`postman_collection.json`](./postman_collection.json) preconfigurada con variables de colección, validación de JWT y aserciones automáticas. La suite contiene **15 requests** y **30 assertions** que pasan al 100%.
-
-### Resumen de la colección:
-| # | Nombre | Método | Resultado esperado |
-|---|--------|--------|--------------------|
-| 01 | Login (ADMIN) | POST | 200 + JWT |
-| 02 | Crear producto | POST | 201 |
-| 03 | Listar productos | GET | 200 |
-| 04 | Obtener producto por ID | GET | 200 |
-| 05 | Producto inexistente | GET | 404 |
-| 06 | Validar producto incorrecto | POST | 400 |
-| 07 | Actualizar producto | PUT | 200 |
-| 08 | Crear pedido | POST | 201 |
-| 09 | Listar pedidos | GET | 200 |
-| 10 | Obtener pedido por ID | GET | 200 |
-| 11 | Pedido con stock insuficiente | POST | 400 |
-| 12 | Cambiar pedido a PAGADO | PUT | 200 |
-| 13 | Cancelar pedido | POST | 200 |
-| 14 | Eliminar producto | DELETE | 200 |
-| 15 | **Acceso denegado CLIENTE (403)** | GET | **403 Forbidden** |
-
-### Pasos para ejecutar la suite automatizada:
-1. Importar `postman_collection.json` en Postman.
-2. Hacer clic sobre la colección **`Sistema de Pedidos - APF2`** → seleccionar **Run**.
-3. Hacer clic en **Run Sistema de Pedidos - APF2**.
-4. **Resultado esperado:** 15 requests ejecutadas, **30 assertions aprobadas, 0 fallidas**.
-
-> **Nota sobre el request 15:** El prerequest script hace login automático como usuario `CLIENTE` y luego intenta acceder a `GET /api/orders` (recurso exclusivo de `ADMIN`). El sistema responde con `403 Forbidden` y un JSON estructurado: `{"status": 403, "error": "Forbidden", "message": "No tienes permisos para realizar esta acción"}`, demostrando que el control de acceso por roles funciona correctamente.
-
-### Ejecución vía CLI (Newman):
-```powershell
-npx newman run postman_collection.json --delay-request 300
-```
+| # | Commit Hash | Mensaje de Commit | Descripción |
+|---|:---:|---|---|
+| 1 | `62152e8` | `feat: inicializar proyecto React + Vite para APF3` | Configuración base del entorno React. |
+| 2 | `9c18ac4` | `feat: instalar axios y react-router-dom` | Incorporación de dependencias clave. |
+| 3 | `72ab0db` | `refactor: organizar carpetas por responsabilidad` | Estructura modular (`services`, `pages`, `components`, `context`). |
+| 4 | `e858c3d` | `feat: configurar HttpClientModule y variables de entorno` | Sistema de estilos CSS global y cliente API base. |
+| 5 | `acb0a45` | `feat: definir rutas raiz con React Router v6` | Configuración de rutas y redirecciones. |
+| 6 | `6e85f9b` | `feat(auth): crear pagina de login con formulario` | Formulario de autenticación con validaciones. |
+| 7 | `f79e1a5` | `feat(auth): implementar guard para rutas protegidas y navbar con logout` | Guardia `PrivateRoute` y control de rol en Navbar. |
+| 8 | `28f4593` | `feat(products): CRUD completo de productos con validaciones y modal` | Gestión interactiva del catálogo de productos. |
+| 9 | `6756ca2` | `feat(orders): crear, listar, pagar y cancelar pedidos desde el frontend` | Flujo de pedidos end-to-end con stock atómico. |
+| 10 | `95a933a` | `feat(core): configurar CORS en SecurityConfig para permitir frontend React` | Habilitación de CORS para `localhost:5173`. |
