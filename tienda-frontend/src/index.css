@@ -168,6 +168,12 @@ tbody tr:hover { background: rgba(99,102,241,0.06); }
 
 tbody td { padding: 0.75rem 1rem; color: var(--text-primary); vertical-align: middle; }
 
+/* Precios, cantidades y acciones no se parten en dos lineas */
+tbody td, .badge { white-space: nowrap; }
+
+/* Enlaces con estilo de boton sin subrayado */
+a.btn { text-decoration: none; }
+
 /* ===== BADGES ===== */
 .badge {
   display: inline-block;
@@ -243,6 +249,12 @@ tbody td { padding: 0.75rem 1rem; color: var(--text-primary); vertical-align: mi
   background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* ===== MOVIL ===== */
+@media (max-width: 720px) {
+  .page-wrapper { padding: 1rem; }
+  .page-header { flex-wrap: wrap; gap: 0.75rem; }
 }
 
 /* ===== ANIMATIONS ===== */
