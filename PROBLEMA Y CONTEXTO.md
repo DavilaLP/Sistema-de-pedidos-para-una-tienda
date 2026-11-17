@@ -51,6 +51,7 @@ Conforme a las directivas del curso y la autorización docente para el uso de **
 | **React Router DOM** | `7.18.5` | Enrutamiento SPA | Gestión de rutas en el cliente (`/login`, `/products`, `/orders`, `/forbidden`), historial y protección de navegación mediante guardias (`PrivateRoute`). |
 | **Axios** | `1.21.0` | Cliente HTTP | Consumo de la API REST del backend con interceptores globales para inyección del header `Authorization: Bearer <JWT>` y captura centralizada de errores (400, 401, 403, 404). |
 | **Context API (React)** | Nativo | Gestión de Estado Global | Manejo del estado global de autenticación (`AuthContext`): usuario activo, rol, persistencia en `localStorage` y métodos `loginUser` / `logoutUser`. |
+| **Vitest & Testing Library**| `3.2.x` / `16.x` | Testing Frontend | Suite de pruebas unitarias para validación de formularios, CRUD y control de stock. |
 | **Vanilla CSS3 Moderno** | Estándar CSS | Diseño y Estilos | Sistema de diseño premium con paleta de colores HSL en modo oscuro, variables CSS globales, modales, alertas flotantes y componentes responsivos sin dependencias externas. |
 
 ### 2.2. Backend (Capa de Servicios y Negocio REST)

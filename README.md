@@ -66,6 +66,7 @@ A continuación se detalla el inventario completo de herramientas, frameworks y 
 | **React Router DOM** | `7.18.5` | Enrutador SPA | Gestión de rutas (`/login`, `/products`, `/orders`, `/forbidden`) y guardias de autenticación (`PrivateRoute`). |
 | **Axios** | `1.21.0` | Cliente HTTP | Peticiones asíncronas REST, inyección automática de cabecera `Authorization: Bearer <token>` y captura centralizada de errores (400, 401, 403, 404). |
 | **Context API (React)** | Nativo | Gestión de Estado | Manejo global del estado de sesión (`AuthContext`), almacenamiento del JWT en `localStorage` y métodos de login/logout. |
+| **Vitest & Testing Library**| `3.2.x` / `16.x` | Testing Frontend | Suite de pruebas unitarias para validación de formularios, CRUD y control de stock. |
 | **Vanilla CSS Moderno** | Estándar CSS3 | Estilos y Diseño | Sistema visual completo en modo oscuro, variables globales HSL, efectos de cristal (glassmorphism), modales y alertas reactivas. |
 
 ### 2.2. Backend (API REST Empresarial)
@@ -166,8 +167,12 @@ A continuación se detalla el inventario completo de herramientas, frameworks y 
 ## 🚀 6. Instrucciones para Ejecutar y Validar
 
 ### 6.1. Iniciar el Backend (Spring Boot)
-1. Asegurarse de que el servicio MySQL esté corriendo con la base de datos `tienda_pedidos`.
-2. En NetBeans o terminal:
+1. **Opción A (Con base de datos en memoria H2 - listo para probar sin instalar nada):**
+   ```powershell
+   mvn spring-boot:run "-Dspring-boot.run.profiles=h2"
+   ```
+2. **Opción B (Con MySQL):**
+   Asegurarse de que el servicio MySQL esté corriendo con la base de datos `tienda_pedidos` y ejecutar:
    ```powershell
    mvn spring-boot:run
    ```
@@ -197,9 +202,17 @@ Para ejecutar las 32 pruebas automatizadas del backend:
 ```powershell
 mvn test
 ```
-Resultado: **`BUILD SUCCESS`** (100% de pruebas aprobadas sin fallos).
+Resultado: **`BUILD SUCCESS`** (100% de pruebas aprobadas sin fallos: 32 tests passed).
 
-### 7.2. Suite Automatizada en Postman (Newman)
+### 7.2. Pruebas Unitarias de Frontend (Vitest + React Testing Library)
+Para ejecutar las pruebas automatizadas del frontend:
+```powershell
+cd tienda-frontend
+npm test
+```
+Resultado: **`4 passed`** (100% de pruebas aprobadas validando renderizado, CRUD y rechazo de stock/cantidades decimales y negativas).
+
+### 7.3. Suite Automatizada en Postman (Newman)
 Para correr la colección de 15 solicitudes y 30 comprobaciones:
 ```powershell
 npx newman run postman_collection.json --delay-request 200
