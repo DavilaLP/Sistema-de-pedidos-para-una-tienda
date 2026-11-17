@@ -75,11 +75,10 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- H2 (solo para tests, no toca MySQL) -->
+        <!-- H2 (disponible para tests y perfil h2/dev) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Lombok -->
