@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 70%),
     var(--bg-base);
   padding: 1rem;
 }
@@ -16,7 +16,7 @@
   padding: 2.5rem 2.25rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.1);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.1);
   animation: slideUp 0.35s ease;
 }
 
@@ -30,7 +30,7 @@
 .login-title {
   font-size: 1.7rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.35rem;

@@ -7,12 +7,14 @@
   --bg-base:       #0a0c14;
   --bg-card:       #111827;
   --bg-card2:      #1a2035;
-  --border:        rgba(99, 102, 241, 0.2);
+  --border:        rgba(139, 92, 246, 0.2);
   --text-primary:  #f1f5f9;
   --text-secondary:#94a3b8;
   --text-muted:    #64748b;
-  --indigo:        #6366f1;
-  --purple:        #a855f7;
+  --indigo:        #22d3ee;
+  --purple:        #8b5cf6;
+  --gradient:      linear-gradient(135deg, #22d3ee, #8b5cf6);
+  --on-gradient:   #06141a;
   --cyan:          #22d3ee;
   --green:         #4ade80;
   --red:           #f87171;
@@ -61,8 +63,8 @@ html, body, #root {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--indigo), var(--purple));
-  color: #fff;
+  background: var(--gradient);
+  color: var(--on-gradient);
 }
 .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
 
@@ -121,10 +123,17 @@ html, body, #root {
 .form-control:focus {
   outline: none;
   border-color: var(--indigo);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.2);
 }
 .form-control.error { border-color: var(--red); }
 .form-control::placeholder { color: var(--text-muted); }
+
+/* Desplegables nativos en tema oscuro: lista legible */
+select.form-control { color-scheme: dark; }
+select.form-control option {
+  background: var(--bg-card2);
+  color: var(--text-primary);
+}
 .form-error { color: var(--red); font-size: 0.8rem; margin-top: 0.15rem; }
 
 /* ===== TABLE ===== */
@@ -215,7 +224,7 @@ tbody td { padding: 0.75rem 1rem; color: var(--text-primary); vertical-align: mi
 /* ===== SPINNER ===== */
 .spinner {
   width: 40px; height: 40px;
-  border: 3px solid rgba(99,102,241,0.2);
+  border: 3px solid rgba(139,92,246,0.2);
   border-top-color: var(--indigo);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -231,7 +240,7 @@ tbody td { padding: 0.75rem 1rem; color: var(--text-primary); vertical-align: mi
 }
 .page-header h1 { font-size: 1.5rem; font-weight: 800; }
 .page-title-accent {
-  background: linear-gradient(135deg, var(--indigo), var(--purple));
+  background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

@@ -7,7 +7,7 @@
   height: 64px;
   background: rgba(15, 17, 26, 0.95);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(99, 102, 241, 0.25);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.25);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -25,7 +25,7 @@
 .navbar-title {
   font-size: 1.15rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 0.03em;
@@ -48,7 +48,7 @@
 
 .nav-link:hover {
   color: #f1f5f9;
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(139, 92, 246, 0.15);
 }
 
 .navbar-user {
