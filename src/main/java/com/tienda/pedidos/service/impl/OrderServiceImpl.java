@@ -1,13 +1,18 @@
+
 package com.tienda.pedidos.service.impl;
 
 import com.tienda.pedidos.exception.InsufficientStockException;
 import com.tienda.pedidos.exception.ResourceNotFoundException;
+import com.tienda.pedidos.exception.OrderConflictException;
+
 import com.tienda.pedidos.model.Order;
 import com.tienda.pedidos.model.OrderItem;
 import com.tienda.pedidos.model.Product;
+
 import com.tienda.pedidos.repository.OrderRepository;
 import com.tienda.pedidos.repository.ProductRepository;
 import com.tienda.pedidos.service.OrderService;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,12 +37,14 @@ public class OrderServiceImpl implements OrderService {
         this.productRepository = productRepository;
     }
 
+    // Obtener todos los pedidos
     @Override
     @Transactional(readOnly = true)
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
+    // Filtrar pedidos por estado
     @Override
     @Transactional(readOnly = true)
     public List<Order> getOrdersByStatus(String status) {
@@ -46,6 +53,7 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    // Buscar pedido por ID
     @Override
     @Transactional(readOnly = true)
     public Order getOrderById(Long id) {
@@ -55,10 +63,14 @@ public class OrderServiceImpl implements OrderService {
                 ));
     }
 
+    // Validar el estado recibido
     private String normalizeStatus(String status) {
+
         String normalized = status == null
                 ? ""
-                : status.trim().toUpperCase(java.util.Locale.ROOT);
+                : status.trim().toUpperCase(
+                        java.util.Locale.ROOT
+                );
 
         if (!VALID_STATUSES.contains(normalized)) {
             throw new IllegalArgumentException(
@@ -70,14 +82,14 @@ public class OrderServiceImpl implements OrderService {
         return normalized;
     }
 
-    /**
-     * Descuenta el stock y guarda el pedido en una sola transacción.
-     * Si falla algún ítem, se revierten todos los cambios.
-     */
+    // Crear pedido y descontar stock
     @Override
     @Transactional
     public Order createOrder(Order order) {
-        if (order.getItems() == null || order.getItems().isEmpty()) {
+
+        if (order.getItems() == null
+                || order.getItems().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "El pedido debe contener al menos un producto."
             );
@@ -90,6 +102,7 @@ public class OrderServiceImpl implements OrderService {
         double total = 0.0;
 
         for (OrderItem item : order.getItems()) {
+
             Product product = productRepository
                     .findById(item.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException(
@@ -97,12 +110,15 @@ public class OrderServiceImpl implements OrderService {
                                     + item.getProductId()
                     ));
 
+            // HTTP 400 si no existe stock suficiente
             if (product.getStock() < item.getQuantity()) {
                 throw new InsufficientStockException(
                         "Stock insuficiente para el producto: "
                                 + product.getName()
-                                + " (Disponible: " + product.getStock()
-                                + ", Solicitado: " + item.getQuantity()
+                                + " (Disponible: "
+                                + product.getStock()
+                                + ", Solicitado: "
+                                + item.getQuantity()
                                 + ")"
                 );
             }
@@ -110,6 +126,7 @@ public class OrderServiceImpl implements OrderService {
             product.setStock(
                     product.getStock() - item.getQuantity()
             );
+
             productRepository.save(product);
 
             item.setId(null);
@@ -121,59 +138,64 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setTotal(total);
+
         return orderRepository.save(order);
     }
 
-    /**
-     * Cambia el estado del pedido.
-     * Si se solicita CANCELADO, devuelve también el stock.
-     * Los pedidos cancelados no pueden reactivarse.
-     */
+    // Actualizar el estado de un pedido
     @Override
     @Transactional
     public Order updateOrderStatus(Long id, String status) {
+
         String normalizedStatus = normalizeStatus(status);
         Order order = getOrderById(id);
 
+        // Si solicita cancelar, usar la logica de cancelacion
         if ("CANCELADO".equals(normalizedStatus)) {
             cancelOrder(id);
             return getOrderById(id);
         }
 
+        // HTTP 409: un pedido cancelado no puede reactivarse
         if ("CANCELADO".equalsIgnoreCase(order.getStatus())) {
-            throw new IllegalArgumentException(
+            throw new OrderConflictException(
                     "No se puede cambiar el estado de un pedido cancelado."
             );
         }
 
         order.setStatus(normalizedStatus);
+
         return orderRepository.save(order);
     }
 
-    /**
-     * Devuelve el stock y marca el pedido como CANCELADO.
-     * Si ya estaba cancelado, no vuelve a devolver el stock.
-     */
+    // Cancelar pedido y devolver el stock
     @Override
     @Transactional
     public void cancelOrder(Long id) {
+
         Order order = getOrderById(id);
 
+        // Evitar devolver el stock dos veces
         if ("CANCELADO".equalsIgnoreCase(order.getStatus())) {
             return;
         }
 
         for (OrderItem item : order.getItems()) {
+
             productRepository.findById(item.getProductId())
                     .ifPresent(product -> {
+
                         product.setStock(
-                                product.getStock() + item.getQuantity()
+                                product.getStock()
+                                        + item.getQuantity()
                         );
+
                         productRepository.save(product);
                     });
         }
 
         order.setStatus("CANCELADO");
+
         orderRepository.save(order);
     }
 }
