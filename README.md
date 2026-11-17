@@ -1,6 +1,6 @@
 # 📦 Sistema de Gestión de Inventario y Pedidos para una Tienda
 
-Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3 (Java 21)** en el backend y **React 19 + Vite** en el frontend, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF3 (Semana 15)** del curso Desarrollo Web Integrado (UTP).
+Este proyecto es una solución web empresarial desarrollada con **Spring Boot 3 (Java 17)** en el backend y **React 19 + Vite** en el frontend, diseñada para gestionar de forma automatizada y precisa el **catálogo de inventario** de una tienda y el **flujo completo de pedidos de compra**. Corresponde al avance **APF3 (Semana 15)** del curso Desarrollo Web Integrado (UTP).
 
 ### 👥 Integrantes del Equipo
 * **Davila Guerra, Duvan Isai** — Participación: **100%**
@@ -73,7 +73,7 @@ A continuación se detalla el inventario completo de herramientas, frameworks y 
 
 | Tecnología / Librería | Versión | Tipo | Responsabilidad en el Sistema |
 | :--- | :---: | :--- | :--- |
-| **Java** | `21` (LTS) | Lenguaje Base | Plataforma de programación y compilación del backend. |
+| **Java** | `17` (LTS) | Lenguaje Base | Plataforma de programación y compilación del backend. |
 | **Spring Boot** | `3.3.0` | Framework Core | Servidor Tomcat embebido, inyección de dependencias y configuración automática. |
 | **Spring Web (MVC)** | `3.3.0` | Framework Web | Controladores RESTful (`@RestController`), endpoints JSON y negociación HTTP. |
 | **Spring Security** | `6.x` | Seguridad | Filtro sin estado (stateless), autorización por roles (`ADMIN`, `CLIENTE`) y configuración CORS para `localhost:5173`. |
@@ -109,6 +109,42 @@ A continuación se detalla el inventario completo de herramientas, frameworks y 
   * Creación y gestión de pedidos con selección dinámica de catálogo, validación de stock y cálculo de totales.
   * Manejo integral de errores HTTP visibles en pantalla: `400 Bad Request` (stock insuficiente), `401 Unauthorized` (credenciales inválidas o expiración), `403 Forbidden` (pantalla de acceso denegado) y `404 Not Found`.
   * Configuración global de CORS en el backend Spring Boot para habilitar comunicación segura con `http://localhost:5173`.
+
+### 3.1. Organización Modular del Frontend
+
+El código de `tienda-frontend/src/` se organiza por responsabilidades:
+
+```text
+tienda-frontend/src/
+├── App.jsx              # Configuración de rutas principales (React Router)
+├── main.jsx             # Punto de entrada de la aplicación
+├── components/          # Componentes reutilizables
+│   ├── Navbar.jsx       #   Barra de navegación según el rol
+│   └── PrivateRoute.jsx #   Guardia de rutas (sesión y rol ADMIN)
+├── pages/               # Pantallas completas, una por ruta
+│   ├── LoginPage.jsx    #   /login      (pública)
+│   ├── ProductsPage.jsx #   /products   (usuario autenticado)
+│   ├── OrdersPage.jsx   #   /orders     (solo ADMIN)
+│   └── ForbiddenPage.jsx#   /forbidden  (acceso denegado)
+├── services/            # Comunicación con la API REST
+│   ├── api.js           #   Cliente Axios con interceptor de token Bearer
+│   ├── authService.js
+│   ├── productService.js
+│   └── orderService.js
+├── context/
+│   └── AuthContext.jsx  # Estado global de sesión (token, usuario y rol)
+└── __tests__/           # Pruebas con Vitest y Testing Library
+```
+
+**Navegación entre pantallas:**
+
+| Ruta | Acceso | Comportamiento |
+|---|---|---|
+| `/login` | Pública | Formulario de inicio de sesión |
+| `/products` | Usuario autenticado | Catálogo protegido; sin sesión redirige a `/login` |
+| `/orders` | Solo `ADMIN` | Un `CLIENTE` es enviado a `/forbidden` |
+| `/forbidden` | Cualquiera | Pantalla de acceso denegado (403) |
+| Cualquier otra | — | Redirección por defecto a `/login` |
 
 ---
 
@@ -210,7 +246,7 @@ Para ejecutar las pruebas automatizadas del frontend:
 cd tienda-frontend
 npm test
 ```
-Resultado: **`4 passed`** (100% de pruebas aprobadas validando renderizado, CRUD y rechazo de stock/cantidades decimales y negativas).
+Resultado: **`18 passed`** (100% de pruebas aprobadas). Incluye renderizado, CRUD y rechazo de stock/cantidades decimales y negativas, además de las rutas protegidas por rol (`PrivateRoute`), la configuración de rutas de `App` y la navegación del `Navbar` según el rol.
 
 ### 7.3. Suite Automatizada en Postman (Newman)
 Para correr la colección de 15 solicitudes y 30 comprobaciones:
@@ -235,7 +271,7 @@ Resultado: **`30 passed, 0 failed`**.
 | 2 | `9c18ac4` | `feat: instalar axios y react-router-dom` | Incorporación de dependencias clave. |
 | 3 | `72ab0db` | `refactor: organizar carpetas por responsabilidad` | Estructura modular (`services`, `pages`, `components`, `context`). |
 | 4 | `e858c3d` | `feat: configurar HttpClientModule y variables de entorno` | Sistema de estilos CSS global y cliente API base. |
-| 5 | `acb0a45` | `feat: definir rutas raiz con React Router v6` | Configuración de rutas y redirecciones. |
+| 5 | `acb0a45` | `feat: definir rutas raiz con React Router v6` | Configuración de rutas y redirecciones (se usa actualmente React Router v7). |
 | 6 | `6e85f9b` | `feat(auth): crear pagina de login con formulario` | Formulario de autenticación con validaciones. |
 | 7 | `f79e1a5` | `feat(auth): implementar guard para rutas protegidas y navbar con logout` | Guardia `PrivateRoute` y control de rol en Navbar. |
 | 8 | `28f4593` | `feat(products): CRUD completo de productos con validaciones y modal` | Gestión interactiva del catálogo de productos. |

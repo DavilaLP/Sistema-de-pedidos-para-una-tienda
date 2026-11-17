@@ -58,7 +58,7 @@ Conforme a las directivas del curso y la autorización docente para el uso de **
 
 | Tecnología / Librería | Versión | Tipo / Clasificación | Propósito y Responsabilidad en el Sistema |
 | :--- | :---: | :--- | :--- |
-| **Java** | `21` (LTS) | Lenguaje & Runtime | Plataforma de ejecución principal del backend empresarial. |
+| **Java** | `17` (LTS) | Lenguaje & Runtime | Plataforma de ejecución principal del backend empresarial. |
 | **Spring Boot** | `3.3.0` | Framework Core | Configuración automática, servidor Tomcat embebido y contenedor de inyección de dependencias. |
 | **Spring Web (MVC)** | `3.3.0` | Framework REST | Exposición de controladores RESTful (`@RestController`), negociación de contenido JSON y manejo de rutas URI. |
 | **Spring Security** | `6.x` | Seguridad & Permisos | Cadena de filtros de seguridad HTTP, control de acceso basado en roles (`ROLE_ADMIN`, `ROLE_CLIENTE`) y configuración de CORS. |
