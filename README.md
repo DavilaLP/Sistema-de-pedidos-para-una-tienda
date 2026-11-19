@@ -277,3 +277,17 @@ Resultado: **`30 passed, 0 failed`**.
 | 8 | `28f4593` | `feat(products): CRUD completo de productos con validaciones y modal` | Gestión interactiva del catálogo de productos. |
 | 9 | `6756ca2` | `feat(orders): crear, listar, pagar y cancelar pedidos desde el frontend` | Flujo de pedidos end-to-end con stock atómico. |
 | 10 | `95a933a` | `feat(core): configurar CORS en SecurityConfig para permitir frontend React` | Habilitación de CORS para `localhost:5173`. |
+
+## 9. Descripción de módulos 
+
+| Módulo / Capa | Tecnología / Herramienta | Descripción / Implementación |
+| :--- | :--- | :--- |
+| **Frontend** | React 19 + Vite 8 | Desarrollo de una interfaz web SPA para TiendaTech, organizada en componentes reutilizables, páginas y servicios. Permite visualizar productos, gestionar pedidos e interactuar con el sistema de forma dinámica. |
+| **Rutas y navegación** | React Router DOM 7 | Implementación de rutas públicas y protegidas. La ruta `/login` permite iniciar sesión, `/products` muestra el catálogo y `/orders` permite gestionar pedidos según los permisos del usuario. |
+| **Cliente HTTP** | Axios 1.21 | Integración del frontend con la API REST de Spring Boot mediante solicitudes GET, POST, PUT y DELETE. Se implementaron interceptores para enviar automáticamente el token JWT y gestionar errores HTTP. |
+| **Testing Frontend** | Vitest + React Testing Library | Herramientas destinadas a comprobar el funcionamiento de componentes, formularios y validaciones. Se revisaron restricciones de campos obligatorios, precios, cantidades y operaciones del catálogo y pedidos. |
+| **Backend** | Java 21 + Spring Boot 3.3 | Desarrollo de una API REST organizada en capas Controller, Service y Repository. Implementación de la lógica de negocio para administrar productos, procesar pedidos y controlar la disponibilidad del inventario. |
+| **Seguridad** | Spring Security + JWT (JJWT 0.12) | Implementación de autenticación mediante tokens Bearer y autorización basada en roles ADMIN y CLIENTE. Se protegieron los endpoints y se configuraron respuestas HTTP 401 y 403 ante accesos no autorizados. |
+| **Persistencia / ORM** | Spring Data JPA + Hibernate | Gestión de entidades y operaciones sobre la base de datos mediante repositorios JPA. Se implementó la persistencia de productos, usuarios y pedidos, incluyendo validaciones de stock y reglas de negocio. |
+| **Base de datos** | H2 en memoria / MySQL | Utilización de H2 como base de datos temporal para las pruebas locales, con compatibilidad MySQL. Se verificaron las tablas PRODUCTS, ORDERS, ORDER_ITEMS y USERS, así como los registros creados desde el frontend. |
+| **Testing Backend** | JUnit 5 + MockMvc | Herramientas para realizar pruebas unitarias y de integración del backend. Se comprobaron respuestas HTTP 400, 401, 403, 404 y 409, además del comportamiento de las operaciones y restricciones del sistema. |
